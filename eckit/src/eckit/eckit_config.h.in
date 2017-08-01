@@ -1,0 +1,21 @@
+#ifndef eckit_config_h
+#define eckit_config_h
+
+#include "eckit/eckit_ecbuild_config.h"
+
+#include "eckit/eckit_version.h"
+
+// external packages
+
+#cmakedefine ECKIT_HAVE_ARMADILLO
+#cmakedefine ECKIT_HAVE_CUDA
+#cmakedefine ECKIT_HAVE_EIGEN
+#cmakedefine ECKIT_HAVE_LAPACK
+#cmakedefine ECKIT_HAVE_MKL
+#cmakedefine ECKIT_HAVE_MPI
+#cmakedefine ECKIT_HAVE_VIENNACL
+
+#define ECKIT_INSTALL_PREFIX "@CMAKE_INSTALL_PREFIX@"
+#define ECKIT_BUILD_DIR      "@CMAKE_BINARY_DIR@"
+
+#endif // eckit_config_h
