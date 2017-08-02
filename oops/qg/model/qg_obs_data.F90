@@ -20,7 +20,7 @@ use qg_locs_mod
 use qg_obs_vectors
 use qg_obsoper_mod
 use qg_vars_mod
-use fckit_log_module, only : log
+use fckit_log_module, only : fckit_log
 use kinds
 
 implicit none
@@ -95,7 +95,7 @@ self%filein =fin
 self%fileout=fout
 
 if (self%filein/="") call obs_read(self)
-call log%debug("TRACE: qg_obs_data:obs_setup: done")
+call fckit_log%debug("TRACE: qg_obs_data:obs_setup: done")
 
 end subroutine obs_setup
 
@@ -142,9 +142,9 @@ integer :: jo, jc
 character(len=250) :: record
 
 write(record,*)"obs_get req=",req
-call log%info(record)
+call fckit_log%info(record)
 write(record,*)"obs_get col=",col
-call log%info(record)
+call fckit_log%info(record)
 
 ! Find obs group
 call findgroup(self,req,jgrp)
@@ -152,11 +152,11 @@ if (.not.associated(jgrp)) then
   jgrp=>self%grphead
   do while (associated(jgrp))
     write(record,*)"Group ",jgrp%grpname," exists."
-    call log%info(record)
+    call fckit_log%info(record)
     jgrp=>jgrp%next
   enddo
   write(record,*)"Cannot find ",req," ."
-  call log%error(record)
+  call fckit_log%error(record)
   call abor1_ftn("qg_obs_get: obs group not found")
 endif
 
@@ -177,7 +177,7 @@ do jo=1,jgrp%nobs
 enddo
 
 write(record,*)"obs_get nobs, ncol=",jgrp%nobs,jcol%ncol
-call log%debug("TRACE: " // record)
+call fckit_log%debug("TRACE: " // record)
 
 end subroutine obs_get
 
@@ -200,11 +200,11 @@ if (.not.associated(jgrp)) then
   jgrp=>self%grphead
   do while (associated(jgrp))
     write(record,*)"Group ",jgrp%grpname," exists."
-    call log%info(record)
+    call fckit_log%info(record)
     jgrp=>jgrp%next
   enddo
   write(record,*)"Cannot find ",req," ."
-  call log%error(record)
+  call fckit_log%error(record)
   call abor1_ftn("qg_obs_put: obs group not found")
 endif
 
@@ -574,7 +574,7 @@ character(len=max_string+50) :: record
 
 iin=90
 write(record,*)'obs_read: opening ',trim(self%filein)
-call log%info(record)
+call fckit_log%info(record)
 open(unit=iin, file=trim(self%filein), form='formatted', action='read')
 
 read(iin,*)self%ngrp
@@ -589,7 +589,7 @@ do jg=1,self%ngrp
   read(iin,*)jgrp%grpname
   read(iin,*)jgrp%nobs
   write(record,*)'obs_read: reading ',jgrp%nobs,' ',jgrp%grpname,' observations.'
-  call log%info(record)
+  call fckit_log%info(record)
   allocate(jgrp%times(jgrp%nobs))
 
   read(iin,*)ncol

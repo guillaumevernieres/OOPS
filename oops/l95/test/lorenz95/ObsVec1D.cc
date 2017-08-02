@@ -15,11 +15,12 @@
 #include "./TestConfig.h"
 #include "lorenz95/ObsVec1D.h"
 #include "lorenz95/ObsTable.h"
+#include "test/TestFixture.h"
 
 namespace test {
 
 // -----------------------------------------------------------------------------
-class ObsVecTestFixture {
+class ObsVecTestFixture : TestFixture {
  public:
   ObsVecTestFixture() {
     const eckit::LocalConfiguration conf(TestConfig::config(), "Observations");

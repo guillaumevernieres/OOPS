@@ -254,9 +254,9 @@ ecbuild_add_test( TARGET test_qg_3dvar
 ecbuild_add_test( TARGET test_qg_3dfgat
                   TYPE SCRIPT
                   COMMAND "compare.sh"
-                  ARGS "${CMAKE_BINARY_DIR}/bin/qg_3dfgat.x testinput/3dfgat.json"
+                  ARGS "${CMAKE_BINARY_DIR}/bin/qg_4dvar.x testinput/3dfgat.json"
                        testoutput/3dfgat.test
-                  DEPENDS qg_3dfgat.x )
+                  DEPENDS qg_4dvar.x )
 
 ecbuild_add_test( TARGET test_qg_4dvar_drpcglmp
                   TYPE SCRIPT

@@ -33,7 +33,7 @@
     "tolerance": "0.005"
   },
   "Covariance": {
-    "covariance": "QgError",
+    "covariance": "static",
     "standard_deviation": "0.8",
     "vertical_correlation": "0.2",
     "horizontal_length_scale": "1e6",
@@ -51,6 +51,7 @@
   },
   "ModelBiasCovariance": null,
   "LinearModel": {
+    "version": "QgTLM",
     "tstep": "PT1H",
     "top_layer_depth": "5500.0",
     "bottom_layer_depth": "4500.0",

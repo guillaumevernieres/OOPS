@@ -19,11 +19,12 @@
 #include "lorenz95/ObsTable.h"
 #include "lorenz95/Resolution.h"
 #include "util/DateTime.h"
+#include "test/TestFixture.h"
 
 namespace test {
 
 // -----------------------------------------------------------------------------
-class GomTestFixture {
+class GomTestFixture : TestFixture {
  public:
   GomTestFixture() {
     const eckit::LocalConfiguration conf(TestConfig::config(), "Observations");

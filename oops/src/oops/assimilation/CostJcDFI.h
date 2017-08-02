@@ -61,34 +61,34 @@ template<typename MODEL> class CostJcDFI : public CostTermBase<MODEL> {
   virtual ~CostJcDFI() {}
 
 /// Initialize before nonlinear model integration.
-  boost::shared_ptr<PostBase<State_> > initialize(const CtrlVar_ &) const;
+  boost::shared_ptr<PostBase<State_> > initialize(const CtrlVar_ &) const override;
   boost::shared_ptr<PostBase<State_> > initializeTraj(const CtrlVar_ &,
                                                       const Geometry_ &,
-                                                      const eckit::Configuration &);
+                                                      const eckit::Configuration &) override;
 
 /// Finalize computation after nonlinear model integration.
-  double finalize(const eckit::Configuration &) const;
-  double finalizeTraj(const eckit::Configuration &);
+  double finalize(const eckit::Configuration &) const override;
+  double finalizeTraj(const eckit::Configuration &) override;
 
 /// Initialize \f$ J_c\f$ before starting the TL run.
-  boost::shared_ptr<PostBaseTL<Increment_> > setupTL(const CtrlInc_ &) const;
+  boost::shared_ptr<PostBaseTL<Increment_> > setupTL(const CtrlInc_ &) const override;
 
 /// Initialize \f$ J_c\f$ before starting the AD run.
   boost::shared_ptr<PostBaseAD<Increment_> > setupAD(
-           boost::shared_ptr<const GeneralizedDepartures>, CtrlInc_ &) const;
+           boost::shared_ptr<const GeneralizedDepartures>, CtrlInc_ &) const override;
 
 /// Multiply by \f$ C\f$ and \f$ C^{-1}\f$.
-  Increment_ * multiplyCovar(const GeneralizedDepartures &) const;
-  Increment_ * multiplyCoInv(const GeneralizedDepartures &) const;
+  Increment_ * multiplyCovar(const GeneralizedDepartures &) const override;
+  Increment_ * multiplyCoInv(const GeneralizedDepartures &) const override;
 
 /// Provide new increment.
-  Increment_ * newDualVector() const;
+  Increment_ * newDualVector() const override;
 
 /// Gradient of \f$ J_c\f$ at first guess.
-  Increment_ * newGradientFG() const {return new Increment_(*gradFG_);}
+  Increment_ * newGradientFG() const override {return new Increment_(*gradFG_);}
 
 /// Reset trajectory.
-  void resetLinearization();
+  void resetLinearization() override;
 
  private:
   const eckit::LocalConfiguration conf_;

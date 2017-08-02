@@ -60,13 +60,13 @@ class ErrorCovariance : public oops::ModelSpaceCovarianceBase<MODEL>,
   ErrorCovariance(const Geometry_ &, const Variables_ &, const eckit::Configuration &, const State_ &);
   virtual ~ErrorCovariance();
 
-  void linearize(const State_ &, const Geometry_ &);
-  void multiply(const Increment_ &, Increment_ &) const;
-  void inverseMultiply(const Increment_ &, Increment_ &) const;
-  void randomize(Increment_ &) const;
+  void linearize(const State_ &, const Geometry_ &) override;
+  void multiply(const Increment_ &, Increment_ &) const override;
+  void inverseMultiply(const Increment_ &, Increment_ &) const override;
+  void randomize(Increment_ &) const override;
 
  private:
-  void print(std::ostream &) const;
+  void print(std::ostream &) const override;
   boost::scoped_ptr<Covariance_> covariance_;
 };
 

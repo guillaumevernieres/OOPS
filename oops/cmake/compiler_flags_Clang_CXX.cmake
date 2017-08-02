@@ -10,7 +10,7 @@
 # FLAGS COMMON TO ALL BUILD TYPES
 ####################################################################
 
-set( CMAKE_CXX_FLAGS     "${CMAKE_CXX_FLAGS} -Wall")
+set( CMAKE_CXX_FLAGS     "${CMAKE_CXX_FLAGS} -Wall -Wno-c++11-extensions")
 
 ####################################################################
 # RELEASE FLAGS

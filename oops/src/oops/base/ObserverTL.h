@@ -45,13 +45,13 @@ template <typename MODEL, typename INCR> class ObserverTL : public PostBaseTL<IN
              const util::Duration &, const bool subwin = false);
   ~ObserverTL() {}
 
-  Departures_ * releaseOutputFromTL() {return ydep_.release();}
+  Departures_ * releaseOutputFromTL() override {return ydep_.release();}
 
  private:
 // Methods
-  void doInitializeTL(const INCR &, const util::DateTime &, const util::Duration &);
-  void doProcessingTL(const INCR &);
-  void doFinalizeTL(const INCR &);
+  void doInitializeTL(const INCR &, const util::DateTime &, const util::Duration &) override;
+  void doProcessingTL(const INCR &) override;
+  void doFinalizeTL(const INCR &) override;
 
 // Obs operator
   ObsSpace_ obspace_;

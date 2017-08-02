@@ -14,7 +14,7 @@
 #include <boost/scoped_ptr.hpp>
 
 #include "eckit/runtime/Main.h"
-#include "eckit/config/JSONConfiguration.h"
+#include "eckit/config/YAMLConfiguration.h"
 #include "util/Timer.h"
 
 namespace oops {
@@ -36,7 +36,7 @@ class Run : public eckit::Main {
   const eckit::Configuration & config() const {return *config_;}
 
  private:
-  boost::scoped_ptr<const eckit::JSONConfiguration> config_;
+  boost::scoped_ptr<const eckit::YAMLConfiguration> config_;
   boost::scoped_ptr<util::Timer> timer_;
 };
 

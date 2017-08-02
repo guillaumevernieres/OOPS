@@ -49,8 +49,8 @@ class WeightedDiff : public PostBase<FLDS> {
   INCR * releaseDiff();
 
  private:
-  void doInitialize(const FLDS &, const util::DateTime &, const util::Duration &);
-  void doProcessing(const FLDS &);
+  void doInitialize(const FLDS &, const util::DateTime &, const util::Duration &) override;
+  void doProcessing(const FLDS &) override;
 
   WeightingFct & wfct_;
   std::map< util::DateTime, double > weights_;

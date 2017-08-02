@@ -37,9 +37,9 @@ template <typename MODEL> class JqTerm : public PostBase< State<MODEL> > {
   void computeModelError(const State4D_ &, Increment4D_ &);
 
  private:
-  void doInitialize(const State_ &, const util::DateTime &, const util::Duration &) {}
-  void doProcessing(const State_ &) {}
-  void doFinalize(const State_ &);
+  void doInitialize(const State_ &, const util::DateTime &, const util::Duration &) override {}
+  void doProcessing(const State_ &) override {}
+  void doFinalize(const State_ &) override;
 
   std::vector<State_> mxi_;
   const unsigned nsubwin_;

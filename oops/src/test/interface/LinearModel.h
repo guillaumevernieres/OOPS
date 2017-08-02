@@ -32,6 +32,7 @@
 #include "oops/base/instantiateCovarFactory.h"
 #include "oops/base/PostProcessor.h"
 #include "oops/base/TrajectorySaver.h"
+#include "oops/generic/instantiateTlmFactory.h"
 #include "oops/interface/Geometry.h"
 #include "oops/interface/Increment.h"
 #include "oops/interface/LinearModel.h"
@@ -63,19 +64,18 @@ template <typename MODEL> class LinearModelFixture : private boost::noncopyable 
   typedef oops::State<MODEL>             State_;
   typedef oops::Variables<MODEL>         Variables_;
   typedef oops::ModelSpaceCovarianceBase<MODEL> Covariance_;
-  typedef oops::CovarianceFactory<MODEL> Factory_;
 
  public:
-  static const eckit::Configuration   & test()       {return *getInstance().test_;}
-  static const Geometry_      & resol()      {return *getInstance().resol_;}
-  static const Variables_     & ctlvars()    {return *getInstance().ctlvars_;}
-  static const util::DateTime & time()       {return *getInstance().time_;}
-  static const Covariance_    & covariance() {return *getInstance().B_;}
-  static const Model_         & model()      {return *getInstance().model_;}
-  static const State_         & xref()       {return *getInstance().xref_;}
-  static const ModelAux_      & bias()       {return *getInstance().bias_;}
-  static const ModelAuxIncr_  & dbias()      {return *getInstance().dbias_;}
-  static const LinearModel_   & tlm()        {return *getInstance().tlm_;}
+  static const eckit::Configuration & test()   {return *getInstance().test_;}
+  static const Geometry_        & resol()      {return *getInstance().resol_;}
+  static const Variables_       & ctlvars()    {return *getInstance().ctlvars_;}
+  static const util::DateTime   & time()       {return *getInstance().time_;}
+  static const Covariance_      & covariance() {return *getInstance().B_;}
+  static const Model_           & model()      {return *getInstance().model_;}
+  static const State_           & xref()       {return *getInstance().xref_;}
+  static const ModelAux_        & bias()       {return *getInstance().bias_;}
+  static const ModelAuxIncr_    & dbias()      {return *getInstance().dbias_;}
+  static const LinearModel_     & tlm()        {return *getInstance().tlm_;}
 
  private:
   static LinearModelFixture<MODEL>& getInstance() {
@@ -115,6 +115,7 @@ template <typename MODEL> class LinearModelFixture : private boost::noncopyable 
     tlConf_.reset(new eckit::LocalConfiguration(TestEnvironment::config(), "LinearModel"));
 
 //  Setup trajectory for TL and AD
+    oops::instantiateTlmFactory<MODEL>();
     boost::ptr_vector<LinearModel_> tlmvec;
     oops::PostProcessor<State_> post;
     post.enrollProcessor(new oops::TrajectorySaver<MODEL>(*xref_, *tlConf_, *resol_, *bias_, tlmvec));

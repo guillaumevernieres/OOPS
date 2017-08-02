@@ -6,12 +6,10 @@ ecbuild_add_library( TARGET lorenz95
                          FieldL95.h
                          GomL95.cc
                          GomL95.h
-                         IdTLM.cc
-                         IdTLM.h
                          IncrementL95.cc
                          IncrementL95.h
+                         instantiateTlmFactory.h
                          L95Traits.h
-                         L95TraitFGAT.h
                          LocsL95.h
                          ModelBias.cc
                          ModelBias.h

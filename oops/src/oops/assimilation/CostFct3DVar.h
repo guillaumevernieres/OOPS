@@ -54,18 +54,20 @@ template<typename MODEL> class CostFct3DVar : public CostFunction<MODEL> {
   ~CostFct3DVar() {}
 
   void runTLM(const CtrlInc_ &, PostProcessorTL<Increment_> &,
-              PostProcessor<Increment_>) const;
+              PostProcessor<Increment_>) const override;
   void runADJ(CtrlInc_ &, PostProcessorAD<Increment_> &,
-              PostProcessor<Increment_>) const;
-  void zeroAD(CtrlInc_ &) const;
+              PostProcessor<Increment_>) const override;
+  void zeroAD(CtrlInc_ &) const override;
 
  private:
-  void runNL(const CtrlVar_ &, PostProcessor<State_>&) const;
-  void addIncr(CtrlVar_ &, const CtrlInc_ &, PostProcessor<Increment_>&) const;
+  void runNL(const CtrlVar_ &, PostProcessor<State_>&) const override;
+  void addIncr(CtrlVar_ &, const CtrlInc_ &, PostProcessor<Increment_>&) const override;
 
-  CostJb3D<MODEL>     * newJb(const eckit::Configuration &, const Geometry_ &, const CtrlVar_ &) const;
-  CostJo<MODEL>       * newJo(const eckit::Configuration &) const;
-  CostTermBase<MODEL> * newJc(const eckit::Configuration &, const Geometry_ &) const;
+  CostJb3D<MODEL>     * newJb(const eckit::Configuration &, 
+                              const Geometry_ &, 
+                              const CtrlVar_ &) const override;
+  CostJo<MODEL>       * newJo(const eckit::Configuration &) const override;
+  CostTermBase<MODEL> * newJc(const eckit::Configuration &, const Geometry_ &) const override;
 
   util::Duration windowLength_;
   util::DateTime windowBegin_;

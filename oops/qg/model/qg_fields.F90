@@ -453,7 +453,7 @@ subroutine read_file(fld, c_conf, vdate)
 ! Needs more interface clean-up here...
 use iso_c_binding
 use datetime_mod
-use fckit_log_module, only : log
+use fckit_log_module, only : fckit_log
 
 implicit none
 type(qg_field), intent(inout) :: fld      !< Fields
@@ -476,32 +476,32 @@ if (config_element_exists(c_conf,"read_from_file")) then
   iread = config_get_int(c_conf,"read_from_file")
 endif
 if (iread==0) then
-  call log%warning("qg_fields:read_file: Inventing State")
+  call fckit_log%warning("qg_fields:read_file: Inventing State")
   call invent_state(fld,c_conf)
   sdate = config_get_string(c_conf,len(sdate),"date")
   WRITE(buf,*) 'validity date is: '//sdate
-  call log%info(buf)
+  call fckit_log%info(buf)
   call datetime_set(sdate, vdate)
 else
   call zeros(fld)
   filename = config_get_string(c_conf,len(filename),"filename")
   WRITE(buf,*) 'qg_field:read_file: opening '//filename
-  call log%info(buf)
+  call fckit_log%info(buf)
   open(unit=iunit, file=trim(filename), form='formatted', action='read')
 
   read(iunit,*) ix, iy, il, ic, is
   if (ix /= fld%nx .or. iy /= fld%ny .or. il /= fld%nl) then
     write (record,*) "qg_fields:read_file: ", &
                    & "input fields have wrong dimensions: ",ix,iy,il
-    call log%error(record)
+    call fckit_log%error(record)
     write (record,*) "qg_fields:read_file: expected: ",fld%nx,fld%ny,fld%nl
-    call log%error(record)
+    call fckit_log%error(record)
     call abor1_ftn("qg_fields:read_file: input fields have wrong dimensions")
   endif
 
   read(iunit,*) sdate
   WRITE(buf,*) 'validity date is: '//sdate
-  call log%info(buf)
+  call fckit_log%info(buf)
   call datetime_set(sdate, vdate)
 
   if (fld%nx>9999)  call abor1_ftn("Format too small")
@@ -545,7 +545,7 @@ end subroutine read_file
 subroutine write_file(fld, c_conf, vdate)
 use iso_c_binding
 use datetime_mod
-use fckit_log_module, only : log
+use fckit_log_module, only : fckit_log
 
 implicit none
 type(qg_field), intent(in) :: fld    !< Fields
@@ -566,7 +566,7 @@ call check(fld)
 
 filename = genfilename(c_conf,max_string_length,vdate)
 WRITE(buf,*) 'qg_field:write_file: writing '//filename
-call log%info(buf)
+call fckit_log%info(buf)
 open(unit=iunit, file=trim(filename), form='formatted', action='write')
 
 is=0

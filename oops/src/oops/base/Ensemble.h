@@ -68,7 +68,7 @@ template<typename MODEL> class Ensemble {
   const util::DateTime validTime_;
   boost::scoped_ptr<const Geometry_> resol_;
   const Variables_ vars_;
-  int rank_;
+  unsigned int rank_;
   boost::ptr_vector<Increment_> ensemblePerturbs_;
 };
 

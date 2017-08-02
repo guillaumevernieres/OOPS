@@ -58,7 +58,7 @@ contains
 !>  Create a DateTime from an ISO8601 string.
 
 subroutine datetime_create(fstring, self)
-use fckit_log_module, only : log
+use fckit_log_module, only : fckit_log
 implicit none
 type(datetime), intent(out)  :: self
 character(len=*), intent(in) :: fstring
@@ -69,7 +69,7 @@ character(len=200) :: record
 if (c_associated(self%ptr)) then
   call datetime_to_string(self, cltest)
   write(record,*) 'datetime_create self already is: ',cltest
-  call log%error(record)
+  call fckit_log%error(record)
   call abor1_ftn('datetime_create: ptr already associated')
 endif
 

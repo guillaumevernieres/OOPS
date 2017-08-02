@@ -95,6 +95,8 @@ template<typename MODEL> class CostFunction : private boost::noncopyable {
 /// Access terms of the cost function other than \f$ J_b\f$
   const CostBase_ & jterm(const unsigned ii) const {return jterms_[ii];}
   unsigned nterms() const {return jterms_.size();}
+  const double getCostJb() const {return costJb_;}
+  const double getCostJoJc() const {return costJoJc_;}
 
  protected:
   void setupTerms(const eckit::Configuration &);
@@ -117,6 +119,9 @@ template<typename MODEL> class CostFunction : private boost::noncopyable {
   boost::scoped_ptr<JbTotal_> jb_;
   boost::ptr_vector<CostBase_> jterms_;
   boost::ptr_vector<LinearModel_> tlm_;
+
+  double costJb_;
+  double costJoJc_;
 };
 
 // -----------------------------------------------------------------------------
@@ -200,12 +205,6 @@ template<typename MODEL>
 void CostFunction<MODEL>::setupTerms(const eckit::Configuration & config) {
   Log::trace() << "CostFunction: setupTerms starting" << std::endl;
 
-// Jb
-  const eckit::LocalConfiguration jbConf(config, "Jb");
-  xb_.reset(new CtrlVar_(eckit::LocalConfiguration(jbConf, "Background"), resol_));
-  jb_.reset(new JbTotal_(*xb_, this->newJb(jbConf, resol_, *xb_), jbConf, resol_));
-  Log::trace() << "CostFunction: setupTerms Jb added" << std::endl;
-
 // Jo
   std::vector<eckit::LocalConfiguration> jos;
   config.get("Jo", jos);
@@ -214,6 +213,12 @@ void CostFunction<MODEL>::setupTerms(const eckit::Configuration & config) {
     jterms_.push_back(jo);
   }
   Log::trace() << "CostFunction: setupTerms Jo added" << std::endl;
+
+// Jb
+  const eckit::LocalConfiguration jbConf(config, "Jb");
+  xb_.reset(new CtrlVar_(eckit::LocalConfiguration(jbConf, "Background"), resol_));
+  jb_.reset(new JbTotal_(*xb_, this->newJb(jbConf, resol_, *xb_), jbConf, resol_));
+  Log::trace() << "CostFunction: setupTerms Jb added" << std::endl;
 
 // Other constraints
   std::vector<eckit::LocalConfiguration> jcs;
@@ -287,12 +292,14 @@ double CostFunction<MODEL>::linearize(const CtrlVar_ & fguess,
   this->runNL(fguess, pp);
 
 // Cost function value
-  double zzz = jb_->finalizeTraj(jq);
+  costJb_ = jb_->finalizeTraj(jq);
+  costJoJc_ = 0.0;
   for (unsigned jj = 0; jj < jterms_.size(); ++jj) {
-    zzz += jterms_[jj].finalizeTraj(diagnostic);
+    costJoJc_ += jterms_[jj].finalizeTraj(diagnostic);
   }
-  Log::test() << "CostFunction: Nonlinear J = " << zzz << std::endl;
-  return zzz;
+  double costJ = costJb_ + costJoJc_;
+  Log::test() << "CostFunction: Nonlinear J = " << costJ << std::endl;
+  return costJ;
 }
 
 // -----------------------------------------------------------------------------

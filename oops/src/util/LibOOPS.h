@@ -26,7 +26,17 @@ public:
 
     LibOOPS();
 
-    static const LibOOPS& instance();
+    ~LibOOPS();
+
+    static LibOOPS& instance();
+
+    virtual eckit::Channel& traceChannel() const;
+
+    virtual eckit::Channel& statsChannel() const;
+
+    virtual eckit::Channel& testChannel() const;
+
+    void finalise();
 
 protected:
 
@@ -35,6 +45,14 @@ protected:
     virtual std::string version() const;
 
     virtual std::string gitsha1(unsigned int count) const;
+
+    mutable eckit::ScopedPtr<eckit::Channel> traceChannel_;
+
+    mutable eckit::ScopedPtr<eckit::Channel> statsChannel_;
+
+    mutable eckit::ScopedPtr<eckit::Channel> testChannel_;
+
+    bool trace_;
 
 };
 

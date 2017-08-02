@@ -35,7 +35,7 @@ template <typename FLDS> class StateInfo : public PostBase<FLDS> {
 
  private:
   const std::string sgrep_;
-  void doProcessing(const FLDS & xx) {Log::info() << sgrep_ << xx << std::endl;}
+  void doProcessing(const FLDS & xx) override {Log::info() << sgrep_ << xx << std::endl;}
 };
 
 }  // namespace oops

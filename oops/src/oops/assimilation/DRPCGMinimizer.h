@@ -51,15 +51,15 @@ namespace oops {
  * precond=\f$I\f$.
  *
  * On entry:
- * -    x       =  starting point, \f$ X_0 \f$.
- * -    xh      = \f$ B^{-1} x_0\f$.
- * -    b       = right hand side.
+ * -    dx      =  starting point, \f$ dx_{0} \f$.
+ * -    dxh     = \f$ B^{-1} dx_{0} \f$.
+ * -    rr      = \f$ (sum B^-1 dx^{b}_{i} + ) H^T R^{-1} d \f$
  * -    B       = \f$ B \f$.
  * -    C       = \f$ C \f$.
  * -    precond = preconditioner \f$ F_k \approx (AB)^{-1} \f$.
  *
- * On exit, x will contain the solution \f$ x \f$ and xh will contain
- * \f$ B^{-1} x\f$.
+ * On exit, dx will contain the solution \f$ dx \f$ and dxh will contain
+ * \f$ B^{-1} dx\f$.
  *  The return value is the achieved reduction in preconditioned residual norm.
  *
  *  Iteration will stop if the maximum iteration limit "maxiter" is reached
@@ -82,13 +82,13 @@ template<typename MODEL> class DRPCGMinimizer : public DRMinimizer<MODEL> {
   typedef HtRinvHMatrix<MODEL>       HtRinvH_;
 
  public:
-  const std::string classname() const {return "DRPCGMinimizer";}
+  const std::string classname() const override {return "DRPCGMinimizer";}
   DRPCGMinimizer(const eckit::Configuration &, const CostFct_ &);
   ~DRPCGMinimizer() {}
 
  private:
   double solve(CtrlInc_ &, CtrlInc_ &, CtrlInc_ &, const Bmat_ &, const HtRinvH_ &,
-               const int, const double);
+               const double, const double, const int, const double) override;
 
   QNewtonLMP<CtrlInc_, Bmat_> lmp_;
 };
@@ -103,63 +103,95 @@ DRPCGMinimizer<MODEL>::DRPCGMinimizer(const eckit::Configuration & conf, const C
 // -----------------------------------------------------------------------------
 
 template<typename MODEL>
-double DRPCGMinimizer<MODEL>::solve(CtrlInc_ & xx, CtrlInc_ & xh, CtrlInc_ & rr,
+double DRPCGMinimizer<MODEL>::solve(CtrlInc_ & dx, CtrlInc_ & dxh, CtrlInc_ & rr,
                                    const Bmat_ & B, const HtRinvH_ & HtRinvH,
+                                   const double costJ0Jb, const double costJ0JoJc,
                                    const int maxiter, const double tolerance) {
-  CtrlInc_ ap(xh);
-  CtrlInc_ pp(xh);
-  CtrlInc_ ph(xh);
-  CtrlInc_ ss(xh);
-  CtrlInc_ sh(xh);
-  CtrlInc_ ww(xh);
 
-  std::vector<CtrlInc_> vvecs;  // for re-orthogonalization
-  std::vector<CtrlInc_> zvecs;  // for re-orthogonalization
-  std::vector<double> scals;  // for re-orthogonalization
+  // dx   increment
+  // dxh  B^{-1} dx
+  // rr   (sum B^{-1} dx_i^{b} +) G^T H^{-1} d 
 
+  CtrlInc_ qq(dxh);
+  CtrlInc_ pp(dxh);
+  CtrlInc_ hh(dxh);
+  CtrlInc_ zz(dxh);
+  CtrlInc_ pr(dxh);
+  CtrlInc_ r0(dxh);
+  CtrlInc_ ww(dxh);
+
+  // vectors for re-orthogonalization
+  std::vector<CtrlInc_> vvecs;
+  std::vector<CtrlInc_> zvecs;
+  std::vector<double> scals;
+
+  // J0
+  const double costJ0 = costJ0Jb + costJ0JoJc;
+
+  // r_{0} 
+  r0 = rr;
+
+  // r_{0}^T r_{0}
   Log::info() << "normr0 " << dot_product(rr, rr) << std::endl;
 
-  // s = B precond r
-  lmp_.multiply(rr, sh);
-  B.multiply(sh, ss);
+  // z_{0} = B LMP r_{0}
+  lmp_.multiply(rr, pr);
+  B.multiply(pr, zz);
+  // p_{0} = z_{0}
+  pp = zz;
+  // h_{0} = LMP r_{0}
+  hh = pr;
 
-  double dotRr0  = dot_product(rr, ss);
+  // r_{0}^T z_{0}
+  double dotRr0  = dot_product(rr, zz);
   double normReduction = 1.0;
   double rdots = dotRr0;
   double rdots_old = 0.0;
 
   vvecs.push_back(rr);
-  zvecs.push_back(ss);
+  zvecs.push_back(zz);
   scals.push_back(1.0/dotRr0);
 
   Log::info() << std::endl;
   for (int jiter = 0; jiter < maxiter; ++jiter) {
     Log::info() << " DRPCG Starting Iteration " << jiter+1 << std::endl;
 
-    if (jiter == 0) {
-      pp = ss;
-      ph = sh;
-    } else {
+    if (jiter > 0) {
+      // beta_{i} = r_{i+1}^T z_{i+1} / r_{i}^T z_{i}
       double beta = rdots/rdots_old;
       Log::debug() << "DRPCG beta = " << beta << std::endl;
 
+      // p_{i+1} = z_{i+1} + beta*p_{i}
       pp *= beta;
-      pp += ss;    // p = s + beta*p
+      pp += zz;    
 
-      ph *= beta;
-      ph += sh;    // ph = sh + beta*ph
+      // h_{i+1} = LMP r_{i+1} + beta*h_{i}
+      hh *= beta;
+      hh += pr;    
     }
 
-    // (Binv + HtRinvH) p
-    HtRinvH.multiply(pp, ap);
-    ap += ph;
+    // q_{i} = h_{i} + H^T R^{-1} H p_{i}
+    HtRinvH.multiply(pp, qq);
+    qq += hh;
 
-    double rho = dot_product(pp, ap);
+    // alpha_{i} = r_{i}^T z_{i} / q_{i}^T p_{i}
+    double rho = dot_product(pp, qq);
     double alpha = rdots/rho;
 
-    xx.axpy(alpha, pp);   // xx = xx + alpha*pp
-    xh.axpy(alpha, ph);   // xh = xh + alpha*ph
-    rr.axpy(-alpha, ap);  // rr = rr - alpha*ap
+    // dx_{i+1} = dx_{i} + alpha * p_{i}
+    dx.axpy(alpha, pp);   
+    // dxh_{i+1} = dxh_{i} + alpha * h_{i} ! for diagnosing Jb
+    dxh.axpy(alpha, hh);
+    // r_{i+1} = r_{i} - alpha * q_{i}
+    rr.axpy(-alpha, qq);  
+
+    // Compute the quadratic cost function
+    // J[dx_{i}] = J[0] - 0.5 dx_{i}^T r_{0}
+    double costJ = costJ0 - 0.5 * dot_product(dx, r0);
+    // Jb[dx_{i}] = 0.5 dx_{i}^T f_{i}
+    double costJb = costJ0Jb + 0.5 * dot_product(dx, dxh);
+    // Jo[dx_{i}] + Jc[dx_{i}] = J[dx_{i}] - Jb[dx_{i}]
+    double costJoJc = costJ - costJb;
 
     // Re-orthogonalization
     for (int jj = 0; jj < jiter; ++jj) {
@@ -167,21 +199,28 @@ double DRPCGMinimizer<MODEL>::solve(CtrlInc_ & xx, CtrlInc_ & xh, CtrlInc_ & rr,
       rr.axpy(-proj, vvecs[jj]);
     }
 
-    lmp_.multiply(rr, sh);
-    B.multiply(sh, ss);
+    // z_{i+1} = B LMP r_{i+1}
+    lmp_.multiply(rr, pr);
+    B.multiply(pr, zz);
 
+    // r_{i}^T z_{i}
     rdots_old = rdots;
-    rdots = dot_product(rr, ss);
+    // r_{i+1}^T z_{i+1}
+    rdots = dot_product(rr, zz);
 
     Log::info() << "rdots " << rdots << "      iteration    " << jiter << std::endl;
 
+    // r_{i+1}^T z_{i+1} / r_{0}^T z_{0}
     normReduction = sqrt(rdots/dotRr0);
 
-    Log::info() << "DRPCG end of iteration " << jiter+1 << ". Norm reduction= "
-                << util::full_precision(normReduction) << std::endl << std::endl;
+    Log::info() << "DRPCG end of iteration " << jiter+1 << std::endl 
+                << "  Norm reduction ("               << std::setw(2) << jiter+1 << ") = " << util::full_precision(normReduction) << std::endl 
+                << "  Quadratic cost function: J   (" << std::setw(2) << jiter+1 << ") = " << util::full_precision(costJ)         << std::endl
+                << "  Quadratic cost function: Jb  (" << std::setw(2) << jiter+1 << ") = " << util::full_precision(costJb)        << std::endl
+                << "  Quadratic cost function: JoJc(" << std::setw(2) << jiter+1 << ") = " << util::full_precision(costJoJc)      << std::endl << std::endl;
 
     // Save the pairs for preconditioning
-    lmp_.push(pp, ph, ap, rho);
+    lmp_.push(pp, hh, qq, rho);
 
     if (normReduction < tolerance) {
       Log::info() << "DRPCG: Achieved required reduction in residual norm." << std::endl;
@@ -189,7 +228,7 @@ double DRPCGMinimizer<MODEL>::solve(CtrlInc_ & xx, CtrlInc_ & xh, CtrlInc_ & rr,
     }
 
     vvecs.push_back(rr);
-    zvecs.push_back(ss);
+    zvecs.push_back(zz);
     scals.push_back(1.0/rdots);
   }
 

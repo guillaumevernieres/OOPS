@@ -60,25 +60,26 @@ template<typename MODEL> class CostFct4DEnsVar : public CostFunction<MODEL> {
   ~CostFct4DEnsVar() {}
 
   void runTLM(const CtrlInc_ &, PostProcessorTL<Increment_> &,
-              PostProcessor<Increment_>) const;
+              PostProcessor<Increment_>) const override;
   void runADJ(CtrlInc_ &, PostProcessorAD<Increment_> &,
-              PostProcessor<Increment_>) const;
-  void zeroAD(CtrlInc_ &) const;
+              PostProcessor<Increment_>) const override;
+  void zeroAD(CtrlInc_ &) const override;
 
  private:
-  void runNL(const CtrlVar_ &, PostProcessor<State_>&) const;
-  void addIncr(CtrlVar_ &, const CtrlInc_ &, PostProcessor<Increment_>&) const;
+  void runNL(const CtrlVar_ &, PostProcessor<State_>&) const override;
+  void addIncr(CtrlVar_ &, const CtrlInc_ &, PostProcessor<Increment_>&) const override;
 
-  CostJb4D<MODEL>     * newJb(const eckit::Configuration &, const Geometry_ &, const CtrlVar_ &) const;
-  CostJo<MODEL>       * newJo(const eckit::Configuration &) const;
-  CostTermBase<MODEL> * newJc(const eckit::Configuration &, const Geometry_ &) const;
+  CostJb4D<MODEL>     * newJb(const eckit::Configuration &, const Geometry_ &,
+                              const CtrlVar_ &) const override;
+  CostJo<MODEL>       * newJo(const eckit::Configuration &) const override;
+  CostTermBase<MODEL> * newJc(const eckit::Configuration &, const Geometry_ &) const override;
 
   util::Duration windowLength_;
   util::DateTime windowBegin_;
   util::DateTime windowEnd_;
   util::Duration windowSub_;
   util::Duration zero_;
-  int ncontrol_;
+  unsigned int ncontrol_;
   const Variables_ ctlvars_;
 };
 
@@ -132,7 +133,7 @@ CostTermBase<MODEL> * CostFct4DEnsVar<MODEL>::newJc(const eckit::Configuration &
 template <typename MODEL>
 void CostFct4DEnsVar<MODEL>::runNL(const CtrlVar_ & xx,
                                    PostProcessor<State_> & post) const {
-  for (int jsub = 0; jsub <= ncontrol_; ++jsub) {
+  for (unsigned int jsub = 0; jsub <= ncontrol_; ++jsub) {
     util::DateTime now(windowBegin_ + jsub*windowSub_);
 
     State_ zz(xx.state()[jsub]);
@@ -148,7 +149,7 @@ template <typename MODEL>
 void CostFct4DEnsVar<MODEL>::runTLM(const CtrlInc_ & dx,
                                     PostProcessorTL<Increment_> & cost,
                                     PostProcessor<Increment_> post) const {
-  for (int jsub = 0; jsub <= ncontrol_; ++jsub) {
+  for (unsigned int jsub = 0; jsub <= ncontrol_; ++jsub) {
     util::DateTime now(windowBegin_ + jsub*windowSub_);
 
     ASSERT(dx.state()[jsub].validTime() == now);
@@ -163,7 +164,7 @@ void CostFct4DEnsVar<MODEL>::runTLM(const CtrlInc_ & dx,
 template <typename MODEL>
 void CostFct4DEnsVar<MODEL>::zeroAD(CtrlInc_ & dx) const {
   util::DateTime now(windowBegin_);
-  for (int jsub = 0; jsub <= ncontrol_; ++jsub) {
+  for (unsigned int jsub = 0; jsub <= ncontrol_; ++jsub) {
     dx.state()[jsub].zero(now);
     now += windowSub_;
   }

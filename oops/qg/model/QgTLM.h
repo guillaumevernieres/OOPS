@@ -18,12 +18,13 @@
 #include <boost/noncopyable.hpp>
 #include <boost/scoped_ptr.hpp>
 
-#include "model/QgFortran.h"
-#include "model/QgGeometry.h"
-#include "model/QgModel.h"
+#include "oops/interface/LinearModelBase.h"
+
 #include "util/Duration.h"
 #include "util/ObjectCounter.h"
 #include "util/Printable.h"
+
+#include "model/QgTraits.h"
 
 // Forward declarations
 namespace eckit {
@@ -31,19 +32,13 @@ namespace eckit {
 }
 
 namespace qg {
-  class ModelBias;
-  class ModelBiasIncrement;
-  class QgIncrement;
-  class QgState;
-
 // -----------------------------------------------------------------------------
 /// QG linear model definition.
 /*!
  *  QG linear model definition and configuration parameters.
  */
 
-class QgTLM: public util::Printable,
-             private boost::noncopyable,
+class QgTLM: public oops::LinearModelBase<QgTraits>,
              private util::ObjectCounter<QgTLM> {
  public:
   static const std::string classname() {return "qg::QgTLM";}
@@ -52,23 +47,23 @@ class QgTLM: public util::Printable,
   ~QgTLM();
 
 /// Model trajectory computation
-  void setTrajectory(const QgState &, QgState &, const ModelBias &);
+  void setTrajectory(const QgState &, QgState &, const ModelBias &) override;
 
 /// Run TLM and its adjoint
-  void initializeTL(QgIncrement &) const;
-  void stepTL(QgIncrement &, const ModelBiasIncrement &) const;
-  void finalizeTL(QgIncrement &) const;
+  void initializeTL(QgIncrement &) const override;
+  void stepTL(QgIncrement &, const ModelBiasIncrement &) const override;
+  void finalizeTL(QgIncrement &) const override;
 
-  void initializeAD(QgIncrement &) const;
-  void stepAD(QgIncrement &, ModelBiasIncrement &) const;
-  void finalizeAD(QgIncrement &) const;
+  void initializeAD(QgIncrement &) const override;
+  void stepAD(QgIncrement &, ModelBiasIncrement &) const override;
+  void finalizeAD(QgIncrement &) const override;
 
 /// Other utilities
-  const util::Duration & timeResolution() const {return tstep_;}
+  const util::Duration & timeResolution() const override {return tstep_;}
   const QgGeometry & resolution() const {return resol_;}
 
  private:
-  void print(std::ostream &) const;
+  void print(std::ostream &) const override;
   typedef std::map< util::DateTime, int >::iterator trajIter;
   typedef std::map< util::DateTime, int >::const_iterator trajICst;
 

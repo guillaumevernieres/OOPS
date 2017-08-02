@@ -48,9 +48,9 @@ class WeightedMean : public PostBase<FLDS> {
   FLDS * releaseMean();
 
  private:
-  void doInitialize(const FLDS &, const util::DateTime &, const util::Duration &);
+  void doInitialize(const FLDS &, const util::DateTime &, const util::Duration &) override;
 
-  void doProcessing(const FLDS &);
+  void doProcessing(const FLDS &) override;
 
   boost::scoped_ptr<WeightingFct> wfct_;
   std::map< util::DateTime, double > weights_;

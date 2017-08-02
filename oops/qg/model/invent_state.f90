@@ -24,7 +24,7 @@ use qg_configs
 use qg_fields
 use iso_c_binding
 use config_mod
-use fckit_log_module, only : log
+use fckit_log_module, only : fckit_log
 use qg_constants, only: u1,u2,bet,worog, domain_zonal, domain_meridional, &
                       & dlogtheta,f0,g,horog,scale_length,rossby_number
 use kinds
@@ -73,7 +73,7 @@ enddo
 ipert = config_get_int(config,"perturb")
 if (ipert/=0) then
   write(record,*)"qg_invent_state_f90: Perturbing invented state by ",ipert,"%."
-  call log%info(record)
+  call fckit_log%info(record)
   zz=real(ipert,kind_real)/100.0_kind_real
   do jy=1,flds%ny
   do jx=1,flds%nx

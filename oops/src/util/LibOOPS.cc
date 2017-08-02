@@ -15,9 +15,11 @@
 #include <algorithm>
 #include <string>
 
-#include "util/LibOOPS.h"
+#include "eckit/log/PrefixTarget.h"
+#include "eckit/log/OStreamTarget.h"
+#include "eckit/utils/Translator.h"
 
-//#include "eckit/eckit_version.h"
+#include "util/LibOOPS.h"
 
 namespace oops {
 
@@ -25,11 +27,30 @@ namespace oops {
 
 static LibOOPS liboops;
 
-LibOOPS::LibOOPS() : Library("oops") {}
+LibOOPS::LibOOPS() : Library("oops") {
+    const char* e = ::getenv("OOPS_TRACE");
+    if (e) {
+        trace_ = eckit::Translator<std::string, bool>()(e);
+    }
+}
 
-const LibOOPS& LibOOPS::instance()
+LibOOPS::~LibOOPS() {
+}
+
+LibOOPS& LibOOPS::instance()
 {
     return liboops;
+}
+
+void LibOOPS::finalise() {
+   eckit::Log::flush();
+
+   // Make sure that these specialised channels that wrap eckit::Log::info() are
+   // destroyed before eckit::Log::info gets destroyed.
+   // Just in case someone still tries to log, we reset to empty channels.
+   traceChannel_.reset(new eckit::Channel());
+   statsChannel_.reset(new eckit::Channel());
+   testChannel_. reset(new eckit::Channel());
 }
 
 const void* LibOOPS::addr() const { return this; }
@@ -43,6 +64,31 @@ std::string LibOOPS::gitsha1(unsigned int count) const {
     }
 
     return sha1.substr(0,std::min(count,40u));
+}
+
+eckit::Channel& LibOOPS::traceChannel() const
+{
+    if (traceChannel_) { return *traceChannel_; }
+    if (trace_) {
+        traceChannel_.reset(new eckit::Channel(new eckit::PrefixTarget("OOPS_TRACE", new eckit::OStreamTarget(eckit::Log::info()))));
+    } else {
+        traceChannel_.reset(new eckit::Channel());
+    }
+    return *traceChannel_;
+}
+
+eckit::Channel& LibOOPS::statsChannel() const
+{
+    if (statsChannel_) { return *statsChannel_; }
+    statsChannel_.reset(new eckit::Channel(new eckit::PrefixTarget("OOPS_STATS", new eckit::OStreamTarget(eckit::Log::info()))));
+    return *statsChannel_;
+}
+
+eckit::Channel& LibOOPS::testChannel() const
+{
+    if (testChannel_) { return *testChannel_; }
+    testChannel_.reset(new eckit::Channel(new eckit::PrefixTarget("Test     :", new eckit::OStreamTarget(eckit::Log::info()))));
+    return *testChannel_;
 }
 
 //----------------------------------------------------------------------------------------------------------------------

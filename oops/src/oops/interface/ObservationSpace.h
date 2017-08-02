@@ -31,12 +31,16 @@ namespace util {
 
 namespace oops {
 
+  template <typename T>
+  class Departures;
+
 // -----------------------------------------------------------------------------
 
 template <typename MODEL>
 class ObservationSpace : public util::Printable,
                          private util::ObjectCounter<ObservationSpace<MODEL> > {
-  typedef typename MODEL::ObsSpace              ObsSpace_;
+  typedef Departures<MODEL>			Departures_;
+  typedef typename MODEL::ObsSpace	ObsSpace_;
 
  public:
   static const std::string classname() {return "oops::ObservationSpace";}
@@ -54,6 +58,7 @@ class ObservationSpace : public util::Printable,
 
 // Other
   void generateDistribution(const eckit::Configuration &);
+  void printJo(const Departures_ &, const Departures_ &) const;
 
  private:
   ObservationSpace & operator=(const ObservationSpace &);
@@ -107,6 +112,16 @@ void ObservationSpace<MODEL>::generateDistribution(const eckit::Configuration & 
   util::Timer timer(classname(), "generateDistribution");
   obsdb_->generateDistribution(conf);
   Log::trace() << "ObservationSpace<MODEL>::generateDistribution done" << std::endl;
+}
+
+// -----------------------------------------------------------------------------
+
+template <typename MODEL>
+void ObservationSpace<MODEL>::printJo(const Departures_ & dy, const Departures_ & grad) const {
+  Log::trace() << "ObservationSpace<MODEL>::printJo starting" << std::endl;
+  util::Timer timer(classname(), "printJo");
+  obsdb_->printJo(dy.depvalues().obsvector(), grad.depvalues().obsvector());
+  Log::trace() << "ObservationSpace<MODEL>::printJo done" << std::endl;
 }
 
 // -----------------------------------------------------------------------------

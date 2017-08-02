@@ -9,11 +9,13 @@
  */
 
 #include "model/QgTraits.h"
+#include "model/instantiateTlmFactory.h"
 #include "oops/runs/Run.h"
 #include "test/interface/LinearModel.h"
 
 int main(int argc,  char ** argv) {
   oops::Run run(argc, argv);
+  qg::instantiateTlmFactory();
   test::LinearModel<qg::QgTraits> tests;
   run.execute(tests);
   return 0;

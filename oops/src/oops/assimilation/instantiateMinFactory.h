@@ -18,6 +18,7 @@
 #include "oops/assimilation/FGMRESMinimizer.h"
 #include "oops/assimilation/GMRESRMinimizer.h"
 #include "oops/assimilation/IPCGMinimizer.h"
+#include "oops/assimilation/LBGMRESRMinimizer.h"
 #include "oops/assimilation/MINRESMinimizer.h"
 #include "oops/assimilation/RPCGMinimizer.h"
 #include "oops/assimilation/PCGMinimizer.h"
@@ -37,6 +38,7 @@ template <typename MODEL> void instantiateMinFactory() {
   static MinMaker<MODEL, SaddlePointMinimizer<MODEL> >  makerSADDLE_("SaddlePoint");
   static MinMaker<MODEL, RPCGMinimizer<MODEL> >         makerRPCG_("RPCG");
   static MinMaker<MODEL, DRPCGMinimizer<MODEL> >        makerDRPCG_("DRPCG");
+  static MinMaker<MODEL, LBGMRESRMinimizer<MODEL> >     makerBDRPCG_("LBGMRESR");
   static MinMaker<MODEL, DRPLanczosMinimizer<MODEL> >   makerDRPLanczos_("DRPLanczos");
   static MinMaker<MODEL, PCGMinimizer<MODEL> >          makerPCG_("PCG");
   static MinMaker<MODEL, PLanczosMinimizer<MODEL> >     makerPLanczos_("PLanczos");

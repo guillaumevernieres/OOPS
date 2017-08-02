@@ -11,9 +11,6 @@
 #ifndef OOPS_BASE_ENSEMBLECOVARIANCE_H_
 #define OOPS_BASE_ENSEMBLECOVARIANCE_H_
 
-#include <boost/foreach.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
-
 #include "eckit/config/LocalConfiguration.h"
 #include "util/Logger.h"
 #include "oops/assimilation/GMRESR.h"
@@ -49,12 +46,12 @@ class EnsembleCovariance : public ModelSpaceCovarianceBase<MODEL> {
   EnsembleCovariance(const Geometry_ &, const Variables_ &, const eckit::Configuration &, const State_ &);
   ~EnsembleCovariance();
 
-  void linearize(const State_ &, const Geometry_ &);
+  void linearize(const State_ &, const Geometry_ &) override;
 
-  void multiply(const Increment_ &, Increment_ &) const;
-  void inverseMultiply(const Increment_ &, Increment_ &) const;
+  void multiply(const Increment_ &, Increment_ &) const override;
+  void inverseMultiply(const Increment_ &, Increment_ &) const override;
 
-  void randomize(Increment_ &) const;
+  void randomize(Increment_ &) const override;
 
  private:
   const eckit::LocalConfiguration config_;

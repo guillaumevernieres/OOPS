@@ -150,7 +150,7 @@ enddo
 end subroutine qg_wspeed_equiv_ad
 ! ------------------------------------------------------------------------------
 subroutine qg_wspeed_gettraj(c_key_self, c_nobs, c_key_traj) bind(c,name='qg_wspeed_gettraj_f90')
-use fckit_log_module, only : log
+use fckit_log_module, only : fckit_log
 implicit none
 integer(c_int), intent(in) :: c_key_self
 integer(c_int), intent(in) :: c_nobs
@@ -164,13 +164,13 @@ integer, allocatable :: mobs(:)
 
 call qg_obsoper_registry%get(c_key_self, self)
 write (record,*) "qg_wspeed_gettraj: after self varin = ",self%varin%fldnames(:)
-call log%debug("TRACE: " // record)
+call fckit_log%debug("TRACE: " // record)
 
 call qg_goms_registry%init()
 call qg_goms_registry%add(c_key_traj)
 call qg_goms_registry%get(c_key_traj,traj)
 write (record,*) "qg_wspeed_gettraj: after alloc traj"
-call log%debug("TRACE: " // record)
+call fckit_log%debug("TRACE: " // record)
 allocate(mobs(c_nobs))
 do jj=1,c_nobs
   mobs(jj)=jj
@@ -178,12 +178,12 @@ enddo
 call gom_setup(traj, self%varin, mobs)
 deallocate(mobs)
 write (record,*) "qg_wspeed_gettraj: after traj setup nobs=",c_nobs
-call log%debug("TRACE: " // record)
+call fckit_log%debug("TRACE: " // record)
 
 end subroutine qg_wspeed_gettraj
 ! ------------------------------------------------------------------------------
 subroutine qg_wspeed_settraj(c_key_gom, c_key_traj) bind(c,name='qg_wspeed_settraj_f90')
-use fckit_log_module, only : log
+use fckit_log_module, only : fckit_log
 implicit none
 integer(c_int), intent(in) :: c_key_gom
 integer(c_int), intent(in) :: c_key_traj
@@ -195,10 +195,10 @@ character(len=250) :: record
 
 call qg_goms_registry%get(c_key_gom,gom)
 write (record,*) "qg_wspeed_settraj: after gom nobs = ",gom%nobs
-call log%debug("TRACE: " // record)
+call fckit_log%debug("TRACE: " // record)
 call qg_goms_registry%get(c_key_traj,traj)
 write (record,*) "qg_wspeed_settraj: after traj nobs = ",traj%nobs
-call log%debug("TRACE: " // record)
+call fckit_log%debug("TRACE: " // record)
 
 do jo=1,gom%nobs
    io=gom%indx(jo)
@@ -206,7 +206,7 @@ do jo=1,gom%nobs
   traj%values(2,io)=gom%values(2,jo)
 enddo
 write (record,*) "qg_wspeed_settraj: after traj copy"
-call log%debug("TRACE: " // record)
+call fckit_log%debug("TRACE: " // record)
 
 end subroutine qg_wspeed_settraj
 ! ------------------------------------------------------------------------------

@@ -36,15 +36,15 @@ template<typename MODEL> class PLanczosMinimizer : public PrimalMinimizer<MODEL>
   typedef HessianMatrix<MODEL>       Hessian_;
 
  public:
-  const std::string classname() const {return "PLanczosMinimizer";}
+  const std::string classname() const override {return "PLanczosMinimizer";}
   PLanczosMinimizer(const eckit::Configuration &, const CostFct_ & J)
     : PrimalMinimizer<MODEL>(J) {}
   ~PLanczosMinimizer() {}
 
  private:
-  virtual double solve(CtrlInc_ &, const CtrlInc_ &,
-                       const Hessian_ &, const Bmat_ &,
-                       const int, const double);
+  double solve(CtrlInc_ &, const CtrlInc_ &,
+               const Hessian_ &, const Bmat_ &,
+               const int, const double) override;
 };
 
 // =============================================================================

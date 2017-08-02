@@ -57,7 +57,7 @@
       },
       "Covariance": {
         "static": {
-          "covariance": "L95Error",
+          "covariance": "static",
           "standard_deviation": "0.6",
           "length_scale": "1.0",
           "date": "2010-01-01T03:00:00Z"
@@ -567,6 +567,7 @@
           "resol": "40"
         },
         "linearmodel": {
+          "version": "L95TLM",
           "tstep": "PT1H30M",
           "trajectory": {
             "tstep": "PT1H30M",
@@ -585,6 +586,7 @@
           "resol": "40"
         },
         "linearmodel": {
+          "version": "L95TLM",
           "tstep": "PT1H30M",
           "trajectory": {
             "tstep": "PT1H30M",

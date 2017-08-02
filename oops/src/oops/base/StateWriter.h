@@ -31,7 +31,7 @@ template <typename FLDS> class StateWriter : public PostBase<FLDS> {
 
  private:
   const eckit::LocalConfiguration ppConfig_;
-  void doProcessing(const FLDS & xx) {xx.write(ppConfig_);}
+  void doProcessing(const FLDS & xx) override {xx.write(ppConfig_);}
 };
 
 }  // namespace oops

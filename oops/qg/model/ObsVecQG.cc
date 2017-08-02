@@ -11,7 +11,9 @@
 #include <math.h>
 
 #include "util/Logger.h"
+
 #include "model/ObsVecQG.h"
+#include "model/ObsSpaceQG.h"
 #include "model/QgFortran.h"
 
 namespace qg {

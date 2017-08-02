@@ -1,9 +1,9 @@
 /*
  * (C) Copyright 2009-2016 ECMWF.
- * 
+ *
  * This software is licensed under the terms of the Apache Licence Version 2.0
- * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0. 
- * In applying this licence, ECMWF does not waive the privileges and immunities 
+ * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+ * In applying this licence, ECMWF does not waive the privileges and immunities
  * granted to it by virtue of its status as an intergovernmental organisation nor
  * does it submit to any jurisdiction.
  */
@@ -18,7 +18,6 @@
 #include <vector>
 
 #include <boost/ptr_container/ptr_map.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
 
 #include "eckit/config/LocalConfiguration.h"
 #include "util/Logger.h"
@@ -93,15 +92,12 @@ template<typename MODEL> class Increment4D : public util::Printable {
 
 template<typename MODEL>
 Increment4D<MODEL>::Increment4D(const JbState_ & jb)
-  : incr4d_(), first_(0), last_(0)
+  : incr4d_(), first_(0), last_(jb.nstates() - 1)
 {
-  boost::ptr_vector<Increment_> dx(jb.newStateIncrement());
-  int isub = 0;
-  while (!dx.empty()) {
-    incr4d_.insert(isub, dx.release(dx.begin()).release());
-    ++isub;
+  for (int jsub = 0; jsub <= last_; ++jsub) {
+    Increment_ * incr = jb.newStateIncrement(jsub);
+    incr4d_.insert(jsub, incr);
   }
-  last_ = isub-1;
   Log::trace() << "Increment4D:Increment4D created." << std::endl;
 }
 // -----------------------------------------------------------------------------

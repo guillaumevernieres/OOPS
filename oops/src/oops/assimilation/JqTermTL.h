@@ -33,13 +33,13 @@ template <typename MODEL> class JqTermTL : public PostBaseTL<Increment<MODEL> > 
 
   void computeModelErrorTL(Increment4D_ &);
 
-  GeneralizedDepartures * releaseOutputFromTL() {return 0;}
+  GeneralizedDepartures * releaseOutputFromTL() override {return 0;}
 
  private:
   void doInitializeTL(const Increment_ &, const util::DateTime &,
-                      const util::Duration &) {}
-  void doProcessingTL(const Increment_ &) {}
-  void doFinalizeTL(const Increment_ &);
+                      const util::Duration &) override {}
+  void doProcessingTL(const Increment_ &) override {}
+  void doFinalizeTL(const Increment_ &) override;
 
   std::vector<Increment_> mxi_;
   const unsigned nsubwin_;

@@ -22,9 +22,11 @@ struct Log {
     static std::ostream& error()   { return eckit::Log::error(); }
     static std::ostream& warning() { return eckit::Log::warning(); }
     static std::ostream& debug()   { return eckit::Log::debug<LibOOPS>(); }
-    static std::ostream& trace()   { return (eckit::Log::debug<LibOOPS>() << "TRACE "); }
-    static std::ostream& stats()   { return (eckit::Log::info() << "STATS "); }
-    static std::ostream& test()    { return (eckit::Log::info() << "Test     : "); }
+
+    // Following are non-default to eckit. They wrap eckit::Log::info() with additional prefix
+    static std::ostream& trace()   { return LibOOPS::instance().traceChannel(); } // prefix "OOPS_TRACE"
+    static std::ostream& stats()   { return LibOOPS::instance().statsChannel(); } // prefix "OOPS_STATS"
+    static std::ostream& test()    { return LibOOPS::instance().testChannel(); }  // prefix "Test     :"
 
 };
 

@@ -19,6 +19,7 @@
 #include "util/Logger.h"
 #include "oops/interface/Geometry.h"
 #include "oops/interface/Increment.h"
+#include "oops/interface/LinearModelBase.h"
 #include "oops/interface/ModelAuxControl.h"
 #include "oops/interface/ModelAuxIncrement.h"
 #include "oops/interface/State.h"
@@ -35,31 +36,29 @@ namespace oops {
 
 /// Encapsulates the linear forecast model.
 /*!
- * Encapsulates the linear forecast model and its adjoint. The linearization
- * trajectory is embedded inside the LinearModel class.
+ *  This class provides the operations associated with the LinearModel. It wraps 
+ *  the actual linear model which can be a model specific one or a generic one 
+ *  (identity). The interface for the linear model comprises two levels (LinearModel  
+ *  and LinearModelBase) because we want run time polymorphism. 
  */
-
 // -----------------------------------------------------------------------------
 
 template <typename MODEL>
 class LinearModel : public util::Printable,
                     private boost::noncopyable,
-                    private util::ObjectCounter<LinearModel<MODEL> > {
-  typedef typename MODEL::LinearModel           LinearModel_;
-  typedef Increment<MODEL>           Increment_;
-  typedef Geometry<MODEL>            Geometry_;
-  typedef ModelAuxControl<MODEL>     ModelAux_;
-  typedef ModelAuxIncrement<MODEL>   ModelAuxIncr_;
-  typedef State<MODEL>               State_;
+                    private util::ObjectCounter<LinearModel<MODEL> >  {
+  typedef LinearModelBase<MODEL>        LinearModelBase_;
+  typedef Increment<MODEL>           	Increment_;
+  typedef Geometry<MODEL>            	Geometry_;
+  typedef ModelAuxControl<MODEL>     	ModelAux_;
+  typedef ModelAuxIncrement<MODEL>   	ModelAuxIncr_;
+  typedef State<MODEL>               	State_;
 
  public:
   static const std::string classname() {return "oops::LinearModel";}
 
   LinearModel(const Geometry_ &, const eckit::Configuration &);
   ~LinearModel();
-
-// Set the linearization trajectory
-  void setTrajectory(const State_ &, State_ &, const ModelAux_ &);
 
 /// Run the tangent linear forecast
   void forecastTL(Increment_ &, const ModelAuxIncr_ &, const util::Duration &,
@@ -71,12 +70,13 @@ class LinearModel : public util::Printable,
                   PostProcessor<Increment_> post = PostProcessor<Increment_>(),
                   PostProcessorAD<Increment_> cost = PostProcessorAD<Increment_>()) const;
 
+// Set the linearization trajectory
+  void setTrajectory(const State_ &, State_ &, const ModelAux_ &);
+
 // Information and diagnostics
   const util::Duration & timeResolution() const {return tlm_->timeResolution();}
 
- private:
-  void print(std::ostream &) const;
-  boost::scoped_ptr<LinearModel_> tlm_;
+ protected:
 
 // Run the TL forecast
   void initializeTL(Increment_ &) const;
@@ -87,6 +87,12 @@ class LinearModel : public util::Printable,
   void initializeAD(Increment_ &) const;
   void stepAD(Increment_ &, ModelAuxIncr_ &) const;
   void finalizeAD(Increment_ &) const;
+
+ private:
+// diagnostics
+  void print(std::ostream &) const;
+
+  boost::scoped_ptr<LinearModelBase_> tlm_;
 };
 
 // =============================================================================
@@ -98,7 +104,7 @@ LinearModel<MODEL>::LinearModel(const Geometry_ & resol, const eckit::Configurat
   Log::trace() << "LinearModel<MODEL>::LinearModel starting" << std::endl;
   util::Timer timer(classname(), "LinearModel");
   Log::debug() << "LinearModel config is:" << conf << std::endl;
-  tlm_.reset(new LinearModel_(resol.geometry(), conf));
+  tlm_.reset(LinearModelFactory<MODEL>::create(resol, conf));
   Log::trace() << "LinearModel<MODEL>::LinearModel done" << std::endl;
 }
 
@@ -114,19 +120,8 @@ LinearModel<MODEL>::~LinearModel() {
 
 // -----------------------------------------------------------------------------
 
-template<typename MODEL>
-void LinearModel<MODEL>::setTrajectory(const State_ & xx, State_ & xlr,
-                                       const ModelAux_ & maux) {
-  Log::trace() << "LinearModel<MODEL>::setTrajectory starting" << std::endl;
-  util::Timer timer(classname(), "setTrajectory");
-  tlm_->setTrajectory(xx.state(), xlr.state(), maux.modelauxcontrol());
-  Log::trace() << "LinearModel<MODEL>::setTrajectory done" << std::endl;
-}
-
 // -----------------------------------------------------------------------------
 /// Run forecast TL and AD
-// -----------------------------------------------------------------------------
-//  NOTE: The forecastTL and forecastAD methods are not from MODEL::LinearModel
 // -----------------------------------------------------------------------------
 
 template<typename MODEL>
@@ -134,14 +129,15 @@ void LinearModel<MODEL>::forecastTL(Increment_ & dx, const ModelAuxIncr_ & mctl,
                                     const util::Duration & len,
                                     PostProcessor<Increment_> post,
                                     PostProcessorTL<Increment_> cost) const {
-  Log::trace() << "Increment<MODEL>::forecastTL starting" << std::endl;
+  Log::trace() << "LinearModel<MODEL>::forecastTL starting" << std::endl;
   util::Timer timer(classname(), "forecastTL");
 
   const util::DateTime end(dx.validTime() + len);
-  Log::info() << "Increment:forecastTL: Starting " << dx << std::endl;
+  const util::Duration tstep(tlm_->timeResolution());
+  Log::info() << "LinearModel<MODEL>::forecastTL: Starting " << dx << std::endl;
   this->initializeTL(dx);
-  cost.initializeTL(dx, end, tlm_->timeResolution());
-  post.initialize(dx, end, tlm_->timeResolution());
+  cost.initializeTL(dx, end, tstep);
+  post.initialize(dx, end, tstep);
   while (dx.validTime() < end) {
     this->stepTL(dx, mctl);
     cost.processTL(dx);
@@ -150,14 +146,12 @@ void LinearModel<MODEL>::forecastTL(Increment_ & dx, const ModelAuxIncr_ & mctl,
   cost.finalizeTL(dx);
   post.finalize(dx);
   this->finalizeTL(dx);
-  Log::info() << "Increment:forecastTL: Finished " << dx << std::endl;
+  Log::info() << "LinearModel<MODEL>::forecastTL: Finished " << dx << std::endl;
   ASSERT(dx.validTime() == end);
 
-  Log::trace() << "Increment<MODEL>::forecastTL done" << std::endl;
+  Log::trace() << "LinearModel<MODEL>::forecastTL done" << std::endl;
 }
 
-// -----------------------------------------------------------------------------
-//  NOTE: The forecastTL and forecastAD methods are not from MODEL::LinearModel
 // -----------------------------------------------------------------------------
 
 template<typename MODEL>
@@ -165,14 +159,15 @@ void LinearModel<MODEL>::forecastAD(Increment_ & dx, ModelAuxIncr_ & mctl,
                                     const util::Duration & len,
                                     PostProcessor<Increment_> post,
                                     PostProcessorAD<Increment_> cost) const {
-  Log::trace() << "Increment<MODEL>::forecastAD starting" << std::endl;
+  Log::trace() << "LinearModel<MODEL>::forecastAD starting" << std::endl;
   util::Timer timer(classname(), "forecastAD");
 
   const util::DateTime bgn(dx.validTime() - len);
-  Log::info() << "Increment:forecastAD: Starting " << dx << std::endl;
+  const util::Duration tstep(tlm_->timeResolution());
+  Log::info() << "LinearModel<MODEL>::forecastAD: Starting " << dx << std::endl;
   this->initializeAD(dx);
-  post.initialize(dx, bgn, tlm_->timeResolution());
-  cost.initializeAD(dx, bgn, tlm_->timeResolution());
+  post.initialize(dx, bgn, tstep);
+  cost.initializeAD(dx, bgn, tstep);
   while (dx.validTime() > bgn) {
     cost.processAD(dx);
     this->stepAD(dx, mctl);
@@ -181,21 +176,30 @@ void LinearModel<MODEL>::forecastAD(Increment_ & dx, ModelAuxIncr_ & mctl,
   cost.finalizeAD(dx);
   post.finalize(dx);
   this->finalizeAD(dx);
-  Log::info() << "Increment:forecastAD: Finished " << dx << std::endl;
+  Log::info() << "LinearModel<MODEL>::forecastAD: Finished " << dx << std::endl;
   ASSERT(dx.validTime() == bgn);
 
-  Log::trace() << "Increment<MODEL>::forecastAD done" << std::endl;
+  Log::trace() << "LinearModel<MODEL>::forecastAD done" << std::endl;
 }
 
 // -----------------------------------------------------------------------------
-//  NOTE: The forecastTL and forecastAD methods are not from MODEL::LinearModel
+
+template<typename MODEL>
+void LinearModel<MODEL>::setTrajectory(const State_ & xx, State_ & xlr,
+                                       const ModelAux_ & maux) {
+  Log::trace() << "LinearModel<MODEL>::setTrajectory starting" << std::endl;
+  util::Timer timer(classname(), "setTrajectory");
+  tlm_->setTrajectory(xx, xlr, maux);
+  Log::trace() << "LinearModel<MODEL>::setTrajectory done" << std::endl;
+}
+
 // -----------------------------------------------------------------------------
 
 template<typename MODEL>
 void LinearModel<MODEL>::initializeTL(Increment_ & dx) const {
   Log::trace() << "LinearModel<MODEL>::initializeTL starting" << std::endl;
   util::Timer timer(classname(), "initializeTL");
-  tlm_->initializeTL(dx.increment());
+  tlm_->initializeTL(dx);
   Log::trace() << "LinearModel<MODEL>::initializeTL done" << std::endl;
 }
 
@@ -205,7 +209,7 @@ template<typename MODEL>
 void LinearModel<MODEL>::stepTL(Increment_ & dx, const ModelAuxIncr_ & merr) const {
   Log::trace() << "LinearModel<MODEL>::stepTL starting" << std::endl;
   util::Timer timer(classname(), "stepTL");
-  tlm_->stepTL(dx.increment(), merr.modelauxincrement());
+  tlm_->stepTL(dx, merr);
   Log::trace() << "LinearModel<MODEL>::stepTL done" << std::endl;
 }
 
@@ -215,7 +219,7 @@ template<typename MODEL>
 void LinearModel<MODEL>::finalizeTL(Increment_ & dx) const {
   Log::trace() << "LinearModel<MODEL>::finalizeTL starting" << std::endl;
   util::Timer timer(classname(), "finalizeTL");
-  tlm_->finalizeTL(dx.increment());
+  tlm_->finalizeTL(dx);
   Log::trace() << "LinearModel<MODEL>::finalizeTL done" << std::endl;
 }
 
@@ -225,7 +229,7 @@ template<typename MODEL>
 void LinearModel<MODEL>::initializeAD(Increment_ & dx) const {
   Log::trace() << "LinearModel<MODEL>::initializeAD starting" << std::endl;
   util::Timer timer(classname(), "initializeAD");
-  tlm_->initializeAD(dx.increment());
+  tlm_->initializeAD(dx);
   Log::trace() << "LinearModel<MODEL>::initializeAD done" << std::endl;
 }
 
@@ -235,7 +239,7 @@ template<typename MODEL>
 void LinearModel<MODEL>::stepAD(Increment_ & dx, ModelAuxIncr_ & merr) const {
   Log::trace() << "LinearModel<MODEL>::stepAD starting" << std::endl;
   util::Timer timer(classname(), "stepAD");
-  tlm_->stepAD(dx.increment(), merr.modelauxincrement());
+  tlm_->stepAD(dx, merr);
   Log::trace() << "LinearModel<MODEL>::stepAD done" << std::endl;
 }
 
@@ -245,7 +249,7 @@ template<typename MODEL>
 void LinearModel<MODEL>::finalizeAD(Increment_ & dx) const {
   Log::trace() << "LinearModel<MODEL>::finalizeAD starting" << std::endl;
   util::Timer timer(classname(), "finalizeAD");
-  tlm_->finalizeAD(dx.increment());
+  tlm_->finalizeAD(dx);
   Log::trace() << "LinearModel<MODEL>::finalizeAD done" << std::endl;
 }
 

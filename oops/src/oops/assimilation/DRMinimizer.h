@@ -46,17 +46,20 @@ template<typename MODEL> class DRMinimizer : public Minimizer<MODEL> {
   typedef HtRinvHMatrix<MODEL>       HtRinvH_;
 
  public:
-  explicit DRMinimizer(const CostFct_ & J): J_(J), gradJb_(0) {}
+  explicit DRMinimizer(const CostFct_ & J): J_(J), gradJb_(0), costJ0Jb_(0) {}
   ~DRMinimizer() {}
-  CtrlInc_ * minimize(const eckit::Configuration &);
-  virtual const std::string classname() const =0;
+  CtrlInc_ * minimize(const eckit::Configuration &) override;
+  virtual const std::string classname() const override =0;
 
  private:
-  virtual double solve(CtrlInc_ &, CtrlInc_ &, CtrlInc_ &, const Bmat_ &,
-                       const HtRinvH_ &, const int, const double) =0;
+  virtual double solve(CtrlInc_ &, CtrlInc_ &, CtrlInc_ &, 
+                       const Bmat_ &, const HtRinvH_ &, 
+                       const double, const double, const int, const double) =0;
 
   const CostFct_ & J_;
   boost::scoped_ptr<CtrlInc_> gradJb_;
+  std::vector<CtrlInc_> dxh_;
+  double costJ0Jb_;
 };
 
 // =============================================================================
@@ -75,7 +78,8 @@ ControlIncrement<MODEL> * DRMinimizer<MODEL>::minimize(const eckit::Configuratio
   const Bmat_ B(J_);
   const HtRinvH_ HtRinvH(J_);
 
-// Compute RHS
+// Compute RHS (sum B^{-1} dx_{i}) + H^T R^{-1} d
+// dx_i = x_i - x_{i-1}; dx_1 = x_1 - x_b
   CtrlInc_ rhs(J_.jb());
   J_.computeGradientFG(rhs);
   J_.jb().addGradientFG(rhs, *gradJb_);
@@ -83,18 +87,31 @@ ControlIncrement<MODEL> * DRMinimizer<MODEL>::minimize(const eckit::Configuratio
   Log::info() << classname() << " rhs" << rhs << std::endl;
 
 // Define minimisation starting point
-  CtrlInc_ dh(J_.jb());
+  // dx 
   CtrlInc_ * dx = new CtrlInc_(J_.jb());
+  // dxh = B^{-1} dx
+  CtrlInc_ dxh(J_.jb());
 
+// Set J[0] = 0.5 (x_i - x_b)^T B^{-1} (x_i - x_b) + 0.5 d^T R^{-1} d
+  const double costJ0Jb = costJ0Jb_;
+  const double costJ0JoJc = J_.getCostJoJc();
+ 
 // Solve the linear system
-  double reduc = this->solve(*dx, dh, rhs, B, HtRinvH, ninner, gnreduc);
+  double reduc = this->solve(*dx, dxh, rhs, B, HtRinvH, costJ0Jb, costJ0JoJc, ninner, gnreduc);
 
   Log::test() << classname() << ": reduction in residual norm = " << reduc << std::endl;
   Log::info() << classname() << " output increment:" << *dx << std::endl;
 
 // Update gradient Jb
-  *gradJb_ += dh;
+  *gradJb_ += dxh;
+  dxh_.push_back(dxh);
 
+// Update Jb component of J[0]: 0.5 (x_i - x_b)^T B^-1 (x_i - x_b)
+  costJ0Jb_ += 0.5 * dot_product(*dx, dxh);
+  for(int jouter = 1; jouter < dxh_.size(); ++jouter) {
+    costJ0Jb_ += dot_product(*dx, dxh_[jouter]);
+  } 
+  
   return dx;
 }
 

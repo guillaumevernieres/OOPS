@@ -1,9 +1,9 @@
 /*
  * (C) Copyright 2009-2016 ECMWF.
- * 
+ *
  * This software is licensed under the terms of the Apache Licence Version 2.0
- * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0. 
- * In applying this licence, ECMWF does not waive the privileges and immunities 
+ * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+ * In applying this licence, ECMWF does not waive the privileges and immunities
  * granted to it by virtue of its status as an intergovernmental organisation nor
  * does it submit to any jurisdiction.
  */
@@ -56,21 +56,21 @@ template<typename MODEL> class CostFctWeak : public CostFunction<MODEL> {
   ~CostFctWeak() {}
 
   void runTLM(const CtrlInc_ &, PostProcessorTL<Increment_> &,
-              PostProcessor<Increment_>) const;
+              PostProcessor<Increment_>) const override;
   void runADJ(CtrlInc_ &, PostProcessorAD<Increment_> &,
-              PostProcessor<Increment_>) const;
-  void zeroAD(CtrlInc_ &) const;
+              PostProcessor<Increment_>) const override;
+  void zeroAD(CtrlInc_ &) const override;
 
   void runTLM(CtrlInc_ &, const bool idmodel = false) const;
   void runADJ(CtrlInc_ &, const bool idmodel = false) const;
 
  private:
-  void runNL(const CtrlVar_ &, PostProcessor<State_> &) const;
-  void addIncr(CtrlVar_ &, const CtrlInc_ &, PostProcessor<Increment_> &) const;
+  void runNL(const CtrlVar_ &, PostProcessor<State_> &) const override;
+  void addIncr(CtrlVar_ &, const CtrlInc_ &, PostProcessor<Increment_> &) const override;
 
-  CostJbJq<MODEL>     * newJb(const eckit::Configuration &, const Geometry_ &, const CtrlVar_ &) const;
-  CostJo<MODEL>       * newJo(const eckit::Configuration &) const;
-  CostTermBase<MODEL> * newJc(const eckit::Configuration &, const Geometry_ &) const;
+  CostJbJq<MODEL>     * newJb(const eckit::Configuration &, const Geometry_ &, const CtrlVar_ &) const override;
+  CostJo<MODEL>       * newJo(const eckit::Configuration &) const override;
+  CostTermBase<MODEL> * newJc(const eckit::Configuration &, const Geometry_ &) const override;
 
   util::Duration windowLength_;
   util::DateTime windowBegin_;
@@ -254,7 +254,7 @@ void CostFctWeak<MODEL>::addIncr(CtrlVar_ & xx, const CtrlInc_ & dx,
                                  PostProcessor<Increment_> & post) const {
   if (tlforcing_) {
     Increment_ xi(dx.state()[0]);
-    for (unsigned jsub = 0; jsub < nsubwin_; ++jsub) {
+    for (int jsub = 0; jsub < nsubwin_; ++jsub) {
       if (jsub > 0) xi += dx.state()[jsub];
       xx.state()[jsub] += xi;
       if (jsub < nsubwin_-1) {
@@ -262,7 +262,7 @@ void CostFctWeak<MODEL>::addIncr(CtrlVar_ & xx, const CtrlInc_ & dx,
       }
     }
   } else {
-    for (unsigned jsub = 0; jsub < nsubwin_; ++jsub) {
+    for (int jsub = 0; jsub < nsubwin_; ++jsub) {
       xx.state()[jsub] += dx.state()[jsub];
     }
   }

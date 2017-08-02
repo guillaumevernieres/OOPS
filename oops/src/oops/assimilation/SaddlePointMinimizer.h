@@ -47,10 +47,10 @@ template<typename MODEL> class SaddlePointMinimizer : public Minimizer<MODEL> {
 // Eigen   typedef SaddlePointLMPMatrix<MODEL>  LMP_;
 
  public:
-  const std::string classname() const {return "SaddlePointMinimizer";}
+  const std::string classname() const override {return "SaddlePointMinimizer";}
   SaddlePointMinimizer(const eckit::Configuration &, const CostFct_ & J): J_(J), gradJb_(0) {}
   ~SaddlePointMinimizer() {}
-  CtrlInc_ * minimize(const eckit::Configuration &);
+  CtrlInc_ * minimize(const eckit::Configuration &) override;
 
  private:
   const CostFct_ & J_;

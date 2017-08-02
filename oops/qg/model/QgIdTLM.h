@@ -1,9 +1,9 @@
 /*
  * (C) Copyright 2009-2016 ECMWF.
- *
+ * 
  * This software is licensed under the terms of the Apache Licence Version 2.0
- * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
- * In applying this licence, ECMWF does not waive the privileges and immunities
+ * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0. 
+ * In applying this licence, ECMWF does not waive the privileges and immunities 
  * granted to it by virtue of its status as an intergovernmental organisation nor
  * does it submit to any jurisdiction.
  */
@@ -15,9 +15,13 @@
 
 #include <boost/noncopyable.hpp>
 
-#include "model/QgGeometry.h"
+#include "oops/interface/LinearModelBase.h"
+
 #include "util/Duration.h"
 #include "util/ObjectCounter.h"
+#include "util/Printable.h"
+
+#include "model/QgTraits.h"
 
 // Forward declarations
 namespace eckit {
@@ -25,15 +29,14 @@ namespace eckit {
 }
 
 namespace qg {
-  class ModelBias;
-  class ModelBiasIncrement;
-  class QgIncrement;
-  class QgState;
-
 // -----------------------------------------------------------------------------
-/// QG identity linear model definition.
+/// QG linear identity model definition.
+/*!
+ *  QG linear identity model definition and configuration parameters.
+ */
 
-class QgIdTLM: private boost::noncopyable, private util::ObjectCounter<QgIdTLM> {
+class QgIdTLM: public oops::LinearModelBase<QgTraits>,
+              private util::ObjectCounter<QgIdTLM> {
  public:
   static const std::string classname() {return "qg::QgIdTLM";}
 
@@ -41,23 +44,25 @@ class QgIdTLM: private boost::noncopyable, private util::ObjectCounter<QgIdTLM> 
   ~QgIdTLM();
 
 /// Model trajectory computation
-  void setTrajectory(const QgState &, QgState &, const ModelBias &);
+  void setTrajectory(const QgState &, QgState &, const ModelBias &) override;
 
 /// Run TLM and its adjoint
-  void initializeTL(QgIncrement &) const;
-  void stepTL(QgIncrement &, const ModelBiasIncrement &) const;
-  void finalizeTL(QgIncrement &) const;
+  void initializeTL(QgIncrement &) const override;
+  void stepTL(QgIncrement &, const ModelBiasIncrement &) const override;
+  void finalizeTL(QgIncrement &) const override;
 
-  void initializeAD(QgIncrement &) const;
-  void stepAD(QgIncrement &, ModelBiasIncrement &) const;
-  void finalizeAD(QgIncrement &) const;
+  void initializeAD(QgIncrement &) const override;
+  void stepAD(QgIncrement &, ModelBiasIncrement &) const override;
+  void finalizeAD(QgIncrement &) const override;
 
 /// Other utilities
-  const util::Duration & timeResolution() const {return tstep_;}
+  const util::Duration & timeResolution() const override {return tstep_;}
   const QgGeometry & resolution() const {return resol_;}
-  friend std::ostream & operator<<(std::ostream &, const QgIdTLM &);
 
  private:
+  void print(std::ostream &) const override;
+
+// Data
   int keyConfig_;
   util::Duration tstep_;
   const QgGeometry resol_;

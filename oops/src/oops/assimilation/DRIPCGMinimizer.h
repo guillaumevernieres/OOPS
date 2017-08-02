@@ -77,13 +77,13 @@ template<typename MODEL> class DRIPCGMinimizer : public DRMinimizer<MODEL> {
   typedef HtRinvHMatrix<MODEL>       HtRinvH_;
 
  public:
-  const std::string classname() const {return "DRIPCGMinimizer";}
+  const std::string classname() const override {return "DRIPCGMinimizer";}
   DRIPCGMinimizer(const eckit::Configuration &, const CostFct_ &);
   ~DRIPCGMinimizer() {}
 
  private:
   double solve(CtrlInc_ &, CtrlInc_ &, CtrlInc_ &, const Bmat_ &, const HtRinvH_ &,
-               const int, const double);
+               const double, const double, const int, const double) override;
 
   QNewtonLMP<CtrlInc_, Bmat_> lmp_;
 };
@@ -100,6 +100,7 @@ DRIPCGMinimizer<MODEL>::DRIPCGMinimizer(const eckit::Configuration & conf, const
 template<typename MODEL>
 double DRIPCGMinimizer<MODEL>::solve(CtrlInc_ & xx, CtrlInc_ & xh, CtrlInc_ & rr,
                                     const Bmat_ & B, const HtRinvH_ & HtRinvH,
+                                    const double costJ0Jb, const double costJ0JoJc, 
                                     const int maxiter, const double tolerance) {
   CtrlInc_ ap(xh);
   CtrlInc_ pp(xh);

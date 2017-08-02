@@ -14,7 +14,7 @@
 
 #include <boost/scoped_ptr.hpp>
 
-#include "eckit/config/JSONConfiguration.h"
+#include "eckit/config/YAMLConfiguration.h"
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 
@@ -22,6 +22,7 @@
 #include "util/ObjectCountHelper.h"
 #include "util/TimerHelper.h"
 #include "util/Logger.h"
+#include "util/LibOOPS.h"
 
 namespace oops {
 
@@ -30,10 +31,10 @@ namespace oops {
 Run::Run(int argc, char** argv) : eckit::Main(argc, argv, "OOPS_HOME"), config_(), timer_() {
 // Get configuration file from command line
   ASSERT(argc >= 2);
-  std::string configfile = argv[argc - 1];
+  eckit::PathName configfile = argv[argc - 1];
 
 // Read configuration
-  config_.reset(new eckit::JSONConfiguration(configfile));
+  config_.reset(new eckit::YAMLConfiguration(configfile));
 
   Log::info() << "Configuration input file is: " << configfile << std::endl;
   Log::info() << "Full configuration is:"  << *config_ << std::endl;
@@ -45,7 +46,9 @@ Run::Run(int argc, char** argv) : eckit::Main(argc, argv, "OOPS_HOME"), config_(
 
 // -----------------------------------------------------------------------------
 
-Run::~Run() {}
+Run::~Run() {
+    LibOOPS::instance().finalise();
+}
 
 // -----------------------------------------------------------------------------
 

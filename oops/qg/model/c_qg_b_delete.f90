@@ -13,10 +13,14 @@ subroutine c_qg_b_delete(c_conf) bind (c,name='qg_b_delete_f90')
 use iso_c_binding
 
 implicit none
-type(c_ptr), intent(inout) :: c_conf !< The background covariance structure
+type(c_ptr), value :: c_conf !< The background covariance structure
+
+integer(c_int), pointer :: f_conf
 
 ! ------------------------------------------------------------------------------
 
-call qg_3d_covar_delete(c_conf)
+call c_f_pointer(c_conf,f_conf)
+
+call qg_3d_covar_delete(f_conf)
 
 end subroutine c_qg_b_delete

@@ -15,10 +15,11 @@
 #include "./TestConfig.h"
 #include "lorenz95/Resolution.h"
 #include "lorenz95/LocalizationMatrixL95.h"
+#include "test/TestFixture.h"
 
 namespace test {
 
-BOOST_AUTO_TEST_SUITE(test_localizationMatrixL95)
+BOOST_FIXTURE_TEST_SUITE(test_localizationMatrixL95,TestFixture)
 
 // -----------------------------------------------------------------------------
   BOOST_AUTO_TEST_CASE(test_localizationMatrixL95_constructor) {
@@ -34,4 +35,5 @@ BOOST_AUTO_TEST_SUITE(test_localizationMatrixL95)
 // -----------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE_END()
+
 }  // namespace test

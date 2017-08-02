@@ -15,7 +15,7 @@ use qg_obs_vectors
 use qg_obsoper_mod
 use iso_c_binding
 use config_mod
-use fckit_log_module, only : log
+use fckit_log_module, only : fckit_log
 use string_f_c_mod
 
 ! ------------------------------------------------------------------------------
@@ -37,11 +37,11 @@ else
   fin  = ""
 endif
 write(record,*)'qg_obs_setup: file in =',trim(fin)
-call log%info(record)
+call fckit_log%info(record)
 
 fout = config_get_string(c_conf,max_string,"ObsData.ObsDataOut.obsfile")
 write(record,*)'qg_obs_setup: file out=',trim(fout)
-call log%info(record)
+call fckit_log%info(record)
 
 call obs_data_registry%init()
 call obs_data_registry%add(c_key_self)

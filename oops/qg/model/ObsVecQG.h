@@ -14,12 +14,12 @@
 #include <ostream>
 #include <string>
 
-#include "model/ObsSpaceQG.h"
 #include "model/QgFortran.h"
 #include "util/ObjectCounter.h"
 #include "util/Printable.h"
 
 namespace qg {
+  class ObsSpaceQG;
 
 // -----------------------------------------------------------------------------
 /// ObsVecQG class to handle vectors in observation space for QG model.

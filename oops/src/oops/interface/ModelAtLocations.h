@@ -23,6 +23,10 @@
 #include "util/Printable.h"
 #include "util/Timer.h"
 
+namespace util {
+  class DateTime;
+}
+
 namespace oops {
 
 // -----------------------------------------------------------------------------
@@ -31,10 +35,10 @@ template <typename MODEL>
 class ModelAtLocations : public util::Printable,
                          private boost::noncopyable,
                          private util::ObjectCounter<ModelAtLocations<MODEL> > {
-  typedef typename MODEL::ModelAtLocations      GOM_;
-  typedef Geometry<MODEL>            Geometry_;
-  typedef ObservationSpace<MODEL>    ObsSpace_;
-  typedef Variables<MODEL>           Variables_;
+  typedef typename MODEL::ModelAtLocations	GOM_;
+  typedef Geometry<MODEL>            		Geometry_;
+  typedef ObservationSpace<MODEL>    		ObsSpace_;
+  typedef Variables<MODEL>           		Variables_;
 
  public:
   static const std::string classname() {return "oops::ModelAtLocations";}

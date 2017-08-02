@@ -42,12 +42,12 @@ class HybridCovariance : public ModelSpaceCovarianceBase<MODEL> {
   HybridCovariance(const Geometry_ &, const Variables_ &, const eckit::Configuration &, const State_ &);
   ~HybridCovariance();
 
-  void linearize(const State_ &, const Geometry_ &);
+  void linearize(const State_ &, const Geometry_ &) override;
 
-  void multiply(const Increment_ &, Increment_ &) const;
-  void inverseMultiply(const Increment_ &, Increment_ &) const;
+  void multiply(const Increment_ &, Increment_ &) const override;
+  void inverseMultiply(const Increment_ &, Increment_ &) const override;
 
-  void randomize(Increment_ &) const;
+  void randomize(Increment_ &) const override;
 
  private:
   boost::scoped_ptr< ModelSpaceCovarianceBase<MODEL> > static_;

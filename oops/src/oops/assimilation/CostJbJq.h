@@ -1,9 +1,9 @@
 /*
  * (C) Copyright 2009-2016 ECMWF.
- * 
+ *
  * This software is licensed under the terms of the Apache Licence Version 2.0
- * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0. 
- * In applying this licence, ECMWF does not waive the privileges and immunities 
+ * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+ * In applying this licence, ECMWF does not waive the privileges and immunities
  * granted to it by virtue of its status as an intergovernmental organisation nor
  * does it submit to any jurisdiction.
  */
@@ -60,29 +60,30 @@ template<typename MODEL> class CostJbJq : public CostJbState<MODEL> {
   virtual ~CostJbJq() {}
 
 /// Finalize \f$ J_q\f$ after the model run.
-  JqTerm<MODEL> * initializeJq() const;
+  JqTerm<MODEL> * initializeJq() const override;
 
 /// Get increment from state (usually first guess).
-  void computeIncrement(const State4D_ &, const State4D_ &, Increment4D_ &) const;
+  void computeIncrement(const State4D_ &, const State4D_ &, Increment4D_ &) const override;
 
 /// Linearize before the linear computations.
-  void linearize(const State4D_ &, const Geometry_ &);
+  void linearize(const State4D_ &, const Geometry_ &) override;
 
 /// Add Jb gradient.
-  void addGradient(const Increment4D_ &, Increment4D_ &, Increment4D_ &) const;
+  void addGradient(const Increment4D_ &, Increment4D_ &, Increment4D_ &) const override;
 
 /// Finalize \f$ J_q\f$ after the TL run.
-  JqTermTL<MODEL> * initializeJqTL() const;
+  JqTermTL<MODEL> * initializeJqTL() const override;
 
 /// Initialize \f$ J_q\f$ forcing before the AD run.
-  JqTermAD<MODEL> * initializeJqAD(const Increment4D_ &) const;
+  JqTermAD<MODEL> * initializeJqAD(const Increment4D_ &) const override;
 
 /// Multiply by \f$ B\f$ and \f$ B^{-1}\f$.
-  void Bmult(const Increment4D_ &, Increment4D_ &) const;
-  void Bminv(const Increment4D_ &, Increment4D_ &) const;
+  void Bmult(const Increment4D_ &, Increment4D_ &) const override;
+  void Bminv(const Increment4D_ &, Increment4D_ &) const override;
 
 /// Create new increment (set to 0).
-  std::auto_ptr<boost::ptr_vector<Increment_> > newStateIncrement() const;
+  unsigned int nstates() const override {return B_.size();}
+  Increment_ * newStateIncrement(const unsigned int) const override;
 
  private:
   boost::ptr_vector< ModelSpaceCovarianceBase<MODEL> > B_;
@@ -214,13 +215,10 @@ void CostJbJq<MODEL>::Bminv(const Increment4D_ & dxin, Increment4D_ & dxout) con
 // -----------------------------------------------------------------------------
 
 template<typename MODEL>
-std::auto_ptr<boost::ptr_vector<Increment<MODEL> > >
-CostJbJq<MODEL>::newStateIncrement() const {
-  boost::ptr_vector<Increment_> incr4d;
-  for (unsigned jsub = 0; jsub < B_.size(); ++jsub) {
-    incr4d.push_back(new Increment_(*resol_, controlvars_, times_[jsub]));
-  }
-  return incr4d.release();
+Increment<MODEL> *
+CostJbJq<MODEL>::newStateIncrement(const unsigned int isub) const {
+  Increment_ * incr = new Increment_(*resol_, controlvars_, times_[isub]);
+  return incr;
 }
 
 // -----------------------------------------------------------------------------

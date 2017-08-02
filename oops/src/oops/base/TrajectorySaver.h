@@ -28,10 +28,10 @@ namespace oops {
 
 template <typename MODEL>
 class TrajectorySaver : public PostBase<State<MODEL> > {
-  typedef Geometry<MODEL>            Geometry_;
-  typedef LinearModel<MODEL>         LinearModel_;
-  typedef ModelAuxControl<MODEL>     ModelAux_;
-  typedef State<MODEL>               State_;
+  typedef Geometry<MODEL>        Geometry_;
+  typedef LinearModel<MODEL>     LinearModel_;
+  typedef ModelAuxControl<MODEL> ModelAux_;
+  typedef State<MODEL>           State_;
 
  public:
   TrajectorySaver(const State_ &, const eckit::Configuration &, 
@@ -44,12 +44,12 @@ class TrajectorySaver : public PostBase<State<MODEL> > {
   const eckit::LocalConfiguration tlConf_;
   const ModelAux_    lrBias_;
   boost::ptr_vector<LinearModel_> & tlm_;
-  LinearModel_ * subtlm_;
+  LinearModel_ *     subtlm_;
   State_             xlr_;
 
-  void doInitialize(const State_ &, const util::DateTime &, const util::Duration &);
-  void doProcessing(const State_ &);
-  void doFinalize(const State_ &);
+  void doInitialize(const State_ &, const util::DateTime &, const util::Duration &) override;
+  void doProcessing(const State_ &) override;
+  void doFinalize(const State_ &) override;
 };
 
 // ====================================================================================

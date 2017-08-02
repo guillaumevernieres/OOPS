@@ -17,13 +17,13 @@
 
 #include <boost/noncopyable.hpp>
 
+#include "oops/interface/LinearModelBase.h"
+
 #include "util/Duration.h"
 #include "util/ObjectCounter.h"
 #include "util/Printable.h"
 
-#include "lorenz95/ModelL95.h"
-#include "lorenz95/ModelTrajectory.h"
-#include "lorenz95/Resolution.h"
+#include "lorenz95/L95Traits.h"
 
 // Forward declarations
 namespace eckit {
@@ -35,17 +35,12 @@ namespace util {
 }
 
 namespace lorenz95 {
-  class ModelBias;
-  class ModelBiasCorrection;
   class FieldL95;
-  class StateL95;
-  class IncrementL95;
 
 // -----------------------------------------------------------------------------
 /// Lorenz 95 linear model definition.
 
-class TLML95: public util::Printable,
-              private boost::noncopyable,
+class TLML95: public oops::LinearModelBase<L95Traits>,
               private util::ObjectCounter<TLML95> {
  public:
   static const std::string classname() {return "lorenz95::TLML95";}
@@ -54,26 +49,26 @@ class TLML95: public util::Printable,
   ~TLML95();
 
 /// Model trajectory computation
-  void setTrajectory(const StateL95 &, StateL95 &, const ModelBias &);
+  void setTrajectory(const StateL95 &, StateL95 &, const ModelBias &) override;
 
 /// Run TLM and its adjoint
-  void initializeTL(IncrementL95 &) const;
-  void stepTL(IncrementL95 &, const ModelBiasCorrection &) const;
-  void finalizeTL(IncrementL95 &) const;
+  void initializeTL(IncrementL95 &) const override;
+  void stepTL(IncrementL95 &, const ModelBiasCorrection &) const override;
+  void finalizeTL(IncrementL95 &) const override;
 
-  void initializeAD(IncrementL95 &) const;
-  void stepAD(IncrementL95 &, ModelBiasCorrection &) const;
-  void finalizeAD(IncrementL95 &) const;
+  void initializeAD(IncrementL95 &) const override;
+  void stepAD(IncrementL95 &, ModelBiasCorrection &) const override;
+  void finalizeAD(IncrementL95 &) const override;
 
 /// Other utilities
-  const util::Duration & timeResolution() const {return tstep_;}
+  const util::Duration & timeResolution() const override {return tstep_;}
   const Resolution & resolution() const {return resol_;}
 
  private:
   const ModelTrajectory * getTrajectory(const util::DateTime &) const;
   void tendenciesTL(const FieldL95 &, const double &, const FieldL95 &, FieldL95 &) const;
   void tendenciesAD(FieldL95 &, double &, const FieldL95 &, const FieldL95 &) const;
-  void print(std::ostream &) const;
+  void print(std::ostream &) const override;
 
   typedef std::map< util::DateTime, ModelTrajectory * >::iterator trajIter;
   typedef std::map< util::DateTime, ModelTrajectory * >::const_iterator trajICst;

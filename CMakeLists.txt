@@ -13,17 +13,21 @@ cmake_minimum_required( VERSION 3.3.2 FATAL_ERROR )
 
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/ecbuild/cmake)
 include( ecbuild_bundle )
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 project( oops-bundle C CXX Fortran )
 
-set( ENABLE_MPI OFF CACHE BOOL "Do not compile with MPI" )
+set( ENABLE_MPI ON CACHE BOOL "Compile with MPI" )
 
 ecbuild_bundle_initialize()
 
 ecbuild_requires_macro_version( 2.5 )
 
 ecbuild_bundle( PROJECT ecbuild       STASH "ecsdk/ecbuild"  TAG     2.6.2 )
-ecbuild_bundle( PROJECT eckit         STASH "ecsdk/eckit"    TAG     0.16.2 )
-ecbuild_bundle( PROJECT fckit         STASH "ecsdk/fckit"    TAG     0.2.2 )
-ecbuild_bundle( PROJECT oops          STASH "oops/oops"      TAG     0.1.0 )
+ecbuild_bundle( PROJECT eckit         STASH "ecsdk/eckit"    TAG     0.17.0 )
+ecbuild_bundle( PROJECT fckit         STASH "ecsdk/fckit"    TAG     0.4.0 )
+ecbuild_bundle( PROJECT oops          STASH "oops/oops"      BRANCH  develop )
 
 ecbuild_bundle_finalize()

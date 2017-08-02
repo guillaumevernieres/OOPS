@@ -29,6 +29,7 @@ namespace eckit {
 }
 
 namespace lorenz95 {
+  class ObsVec1D;
 
 /// A Simple Observation Data Handler
 /*!
@@ -52,6 +53,7 @@ class ObsTable : public util::Printable,
   std::vector<double> locations(const util::DateTime &, const util::DateTime &) const;
   std::vector<int> timeSelect(const util::DateTime &, const util::DateTime &) const;
   void generateDistribution(const eckit::Configuration &);
+  void printJo(const ObsVec1D &, const ObsVec1D &);
   unsigned int nobs() const {return times_.size();}
   const util::DateTime & windowStart() const {return winbgn_;}
   const util::DateTime & windowEnd() const {return winend_;}

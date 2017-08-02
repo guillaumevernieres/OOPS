@@ -1,9 +1,9 @@
 /*
  * (C) Copyright 2009-2016 ECMWF.
- * 
+ *
  * This software is licensed under the terms of the Apache Licence Version 2.0
- * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0. 
- * In applying this licence, ECMWF does not waive the privileges and immunities 
+ * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+ * In applying this licence, ECMWF does not waive the privileges and immunities
  * granted to it by virtue of its status as an intergovernmental organisation nor
  * does it submit to any jurisdiction.
  */
@@ -13,7 +13,6 @@
 
 #include <memory>
 #include <boost/noncopyable.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
 
 #include "oops/interface/Geometry.h"
 #include "oops/interface/Increment.h"
@@ -78,7 +77,8 @@ template<typename MODEL> class CostJbState : private boost::noncopyable {
   virtual void Bminv(const Increment4D_ &, Increment4D_ &) const =0;
 
 /// Create new increment (set to 0).
-  virtual std::auto_ptr<boost::ptr_vector<Increment_> > newStateIncrement() const =0;
+  virtual unsigned int nstates() const =0;
+  virtual Increment_ * newStateIncrement(const unsigned int) const =0;
 };
 
 // -----------------------------------------------------------------------------

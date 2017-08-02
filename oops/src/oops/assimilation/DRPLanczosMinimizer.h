@@ -47,13 +47,14 @@ namespace oops {
  * precond=\f$I\f$.
  *
  * On entry:
- * -    xh      = starting point, \f$ B^{-1} x_0\f$.
+ * -    dx      = starting point.
+ * -    dxh     = starting point, \f$ B^{-1} dx_{0}\f$.
  * -    rr      = residual at starting point.
  * -    B       = \f$ B \f$.
  * -    C       = \f$ C \f$.
  * -    precond = preconditioner \f$ F_k \approx (AB)^{-1} \f$.
  *
- * On exit, xh will contain \f$ B^{-1} x\f$ where x is the solution.
+ * On exit, dxh will contain \f$ B^{-1} x\f$ where x is the solution.
  * The return value is the achieved reduction in residual norm.
  *
  * Iteration will stop if the maximum iteration limit "maxiter" is reached
@@ -76,13 +77,13 @@ template<typename MODEL> class DRPLanczosMinimizer : public DRMinimizer<MODEL> {
   typedef HtRinvHMatrix<MODEL>       HtRinvH_;
 
  public:
-  const std::string classname() const {return "DRPLanczosMinimizer";}
+  const std::string classname() const override {return "DRPLanczosMinimizer";}
   DRPLanczosMinimizer(const eckit::Configuration &, const CostFct_ &);
   ~DRPLanczosMinimizer() {}
 
  private:
   double solve(CtrlInc_ &, CtrlInc_ &, CtrlInc_ &, const Bmat_ &, const HtRinvH_ &,
-               const int, const double);
+               const double, const double, const int, const double) override;
 
   SpectralLMP<CtrlInc_> lmp_;
 
@@ -104,44 +105,64 @@ DRPLanczosMinimizer<MODEL>::DRPLanczosMinimizer(const eckit::Configuration & con
 // -----------------------------------------------------------------------------
 
 template<typename MODEL>
-double DRPLanczosMinimizer<MODEL>::solve(CtrlInc_ & xx, CtrlInc_ & xh, CtrlInc_ & rr,
+double DRPLanczosMinimizer<MODEL>::solve(CtrlInc_ & dx, CtrlInc_ & dxh, CtrlInc_ & rr,
                                         const Bmat_ & B, const HtRinvH_ & HtRinvH,
+                                        const double costJ0Jb, const double costJ0JoJc,
                                         const int maxiter, const double tolerance) {
-  CtrlInc_ zz(xh);
-  CtrlInc_ zh(xh);
+
+  // dx   increment
+  // dxh  B^{-1} dx
+  // rr   (sum B^{-1} dx_i^{b} +) G^T H^{-1} d 
+
+  CtrlInc_ zz(dxh);
+  CtrlInc_ pr(dxh);
   CtrlInc_ vv(rr);
 
-  std::vector<double> yy;
+  std::vector<double> ss;
   std::vector<double> dd;
+
+  // J0
+  const double costJ0 = costJ0Jb + costJ0JoJc;
 
   lmp_.update(vvecs_, hvecs_, zvecs_, alphas_, betas_);
 
-  // z = B precond r
-  lmp_.multiply(vv, zh);
-  B.multiply(zh, zz);
+  // z_{0} = B LMP r_{0}
+  lmp_.multiply(vv, pr);
+  B.multiply(pr, zz);
 
-  double normReduction = 1.0;
+  // beta_{0} = sqrt( z_{0}^T r_{0} )
   double beta = sqrt(dot_product(zz, vv));
   const double beta0 = beta;
 
+  // v_{1} = r_{0} / beta_{0}
   vv *= 1/beta;
-  zh *= 1/beta;
+  // pr_{1} = LMP r_{0} / beta_{0}
+  pr *= 1/beta;
+  // z_{1} = z_{0} / beta_{0}  
   zz *= 1/beta;
 
-  hvecs_.push_back(new CtrlInc_(zh));  // hvecs[0] = zh_1 --> required for solution
-  zvecs_.push_back(new CtrlInc_(zz));  // zvecs[0] = z_1 ---> for re-orthogonalization
-  vvecs_.push_back(new CtrlInc_(vv));  // vvecs[0] = v_1 ---> for re-orthogonalization
+  // hvecs[0] = pr_{1} --> required for solution
+  hvecs_.push_back(new CtrlInc_(pr));
+  // zvecs[0] = z_{1} ---> for re-orthogonalization
+  zvecs_.push_back(new CtrlInc_(zz));
+  // vvecs[0] = v_{1} ---> for re-orthogonalization
+  vvecs_.push_back(new CtrlInc_(vv));
+
+  double normReduction = 1.0;
 
   Log::info() << std::endl;
   for (int jiter = 0; jiter < maxiter; ++jiter) {
     Log::info() << "DRPLanczos Starting Iteration " << jiter+1 << std::endl;
 
-    // vv = A z - beta * v_{j-1}
+    // v_{i+1} = ( pr_{i} + H^T R^{-1} H z_{i} ) - beta * v_{i-1}
     HtRinvH.multiply(zz, vv);
-    vv += zh;            // vv = A zz
-    if (jiter > 0) vv.axpy(-beta, vvecs_[jiter-1]);  // vv = vv - beta * v_{j-1}
+    vv += pr;            
+    if (jiter > 0) vv.axpy(-beta, vvecs_[jiter-1]);  
 
+    // alpha_{i} = v_{i+1}^T z_{i}
     double alpha = dot_product(zz, vv);
+ 
+    // v_{i+1} = v_{i+1} - alpha_{i} v_{i}
     vv.axpy(-alpha, vvecs_[jiter]);  // vv = vv - alpha * v_j
 
     // Re-orthogonalization
@@ -150,38 +171,60 @@ double DRPLanczosMinimizer<MODEL>::solve(CtrlInc_ & xx, CtrlInc_ & xh, CtrlInc_ 
       vv.axpy(-proj, vvecs_[jj]);
     }
 
-    lmp_.multiply(vv, zh);
-    B.multiply(zh, zz);  // zz = B precond vv
+    // z_{i+1} = B LMP v_{i+1}
+    lmp_.multiply(vv, pr);
+    B.multiply(pr, zz);  
 
+    // beta_{i+1} = sqrt( zz_{i+1}^t, vv_{i+1} )
     beta = sqrt(dot_product(zz, vv));
 
+    // v_{i+1} = v_{i+1} / beta_{i+1}
     vv *= 1/beta;
-    zh *= 1/beta;
+    // pr_{i+1} = pr_{i+1} / beta_{i+1}
+    pr *= 1/beta;
+    // z_{i+1} = z_{i+1} / beta_{i+1}
     zz *= 1/beta;
 
-    hvecs_.push_back(new CtrlInc_(zh));  // hvecs[jiter+1] =zh_jiter
-    zvecs_.push_back(new CtrlInc_(zz));  // zvecs[jiter+1] = z_jiter
-    vvecs_.push_back(new CtrlInc_(vv));  // vvecs[jiter+1] = v_jiter
+    // hvecs[i+1] =pr_{i+1}
+    hvecs_.push_back(new CtrlInc_(pr));
+    // zvecs[i+1] = z_{i+1}
+    zvecs_.push_back(new CtrlInc_(zz));
+    // vvecs[i+1] = v_{i+1}
+    vvecs_.push_back(new CtrlInc_(vv));
 
     alphas_.push_back(alpha);
 
     if (jiter == 0) {
-      yy.push_back(beta0/alpha);
+      ss.push_back(beta0/alpha);
       dd.push_back(beta0);
     } else {
-      // Solve the tridiagonal system T_jiter y_jiter = beta0 * e_1
+      // Solve the tridiagonal system T_{i} s_{i} = beta0 * e_1
       dd.push_back(beta0*dot_product(zvecs_[0], vv));
-      TriDiagSolve(alphas_, betas_, dd, yy);
+      TriDiagSolve(alphas_, betas_, dd, ss);
     }
 
     betas_.push_back(beta);
 
-    // Gradient norm in precond metric --> sqrt(r'z) --> beta * y(jiter)
-    double rznorm = beta*std::abs(yy[jiter]);
+    // Compute the quadratic cost function
+    // J[du_{i}] = J[0] - 0.5 s_{i}^T Z_{i}^T r_{0}
+    // Jb[du_{i}] = 0.5 s_{i}^T V_{i}^T Z_{i} s_{i}
+    double costJ = costJ0;
+    double costJb = costJ0Jb;
+    for (int jj = 0; jj < jiter+1; ++jj) {
+      costJ -= 0.5 * ss[jj] * dot_product(zvecs_[jj], rr);
+      costJb += 0.5 * ss[jj] * dot_product(vvecs_[jj], zvecs_[jj]) * ss[jj]; 
+    }
+    double costJoJc = costJ - costJb;
+
+    // Gradient norm in precond metric --> sqrt(r'z) --> beta * s_{i}
+    double rznorm = beta*std::abs(ss[jiter]);
     normReduction = rznorm/beta0;
 
-    Log::info() << "DRPLanczos end of iteration " << jiter+1 << ". Norm reduction= "
-                << util::full_precision(normReduction) << std::endl << std::endl;
+    Log::info() << "DRPLanczos end of iteration " << jiter+1 << std::endl
+                << "  Norm reduction ("               << std::setw(2) << jiter+1 << ") = " << util::full_precision(normReduction) << std::endl
+                << "  Quadratic cost function: J   (" << std::setw(2) << jiter+1 << ") = " << util::full_precision(costJ)         << std::endl
+                << "  Quadratic cost function: Jb  (" << std::setw(2) << jiter+1 << ") = " << util::full_precision(costJb)        << std::endl
+                << "  Quadratic cost function: JoJc(" << std::setw(2) << jiter+1 << ") = " << util::full_precision(costJoJc)      << std::endl << std::endl;
 
     if (normReduction < tolerance) {
       Log::info() << "DRPLanczos: Achieved required reduction in residual norm." << std::endl;
@@ -189,10 +232,10 @@ double DRPLanczosMinimizer<MODEL>::solve(CtrlInc_ & xx, CtrlInc_ & xh, CtrlInc_ 
     }
   }
 
-  // Calculate the solution (xh = Binv xx)
-  for (int jj = 0; jj < yy.size(); ++jj) {
-    xx.axpy(yy[jj], zvecs_[jj]);
-    xh.axpy(yy[jj], hvecs_[jj]);
+  // Calculate the solution (dxh = Binv dx)
+  for (int jj = 0; jj < ss.size(); ++jj) {
+    dx.axpy(ss[jj], zvecs_[jj]);
+    dxh.axpy(ss[jj], hvecs_[jj]);
   }
 
   return normReduction;

@@ -18,11 +18,14 @@
 #include <string>
 #include <vector>
 
-#include "util/Logger.h"
 #include "eckit/config/LocalConfiguration.h"
+
+#include "util/abor1_cpp.h"
 #include "util/DateTime.h"
 #include "util/Duration.h"
-#include "util/abor1_cpp.h"
+#include "util/Logger.h"
+
+#include "lorenz95/ObsVec1D.h"
 
 using std::string;
 using std::endl;
@@ -149,6 +152,12 @@ void ObsTable::generateDistribution(const eckit::Configuration & config) {
   ASSERT(iobs == nobs);
 
   Log::trace() << "ObsTable::generateDistribution done" << std::endl;
+}
+
+// -----------------------------------------------------------------------------
+
+void ObsTable::printJo(const ObsVec1D & ydep, const ObsVec1D & grad) {
+  Log::info() << "ObsTable::printJo not implemented" << std::endl;
 }
 
 // -----------------------------------------------------------------------------

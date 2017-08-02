@@ -12,24 +12,43 @@
 /// @author Tiago Quintino
 /// @date   August 2016
 
+#include <stdlib.h>
+
 #include <algorithm>
 #include <string>
 
 #include "eckit/config/LibEcKit.h"
 
 #include "eckit/eckit_version.h"
+#include "eckit/thread/AutoLock.h"
 
 namespace eckit {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-static LibEcKit libeckit;
+REGISTER_LIBRARY(LibEcKit);
 
-LibEcKit::LibEcKit() : Library("eckit") {}
-
-const LibEcKit& LibEcKit::instance()
+LibEcKit::LibEcKit() :
+    Library("eckit"),
+    abort_handler_(&(::abort))
 {
+}
+
+LibEcKit& LibEcKit::instance()
+{
+    static LibEcKit libeckit;
     return libeckit;
+}
+
+void LibEcKit::setAbortHandler(abort_handler_t h)
+{
+    AutoLock<LibEcKit> lock(*this);
+    if(h) { abort_handler_ = h; }
+}
+
+void LibEcKit::abort()
+{
+    abort_handler_();
 }
 
 const void* LibEcKit::addr() const { return this; }

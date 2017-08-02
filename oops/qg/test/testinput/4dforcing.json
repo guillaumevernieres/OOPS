@@ -34,7 +34,7 @@
       },
       "Covariance": [
         {
-          "covariance": "QgError",
+          "covariance": "static",
           "standard_deviation": "0.8",
           "vertical_correlation": "0.2",
           "horizontal_length_scale": "1e6",
@@ -42,7 +42,7 @@
           "date": "2010-01-01T00:00:00Z"
         },
         {
-          "covariance": "QgError",
+          "covariance": "static",
           "standard_deviation": "0.2",
           "vertical_correlation": "0.5",
           "horizontal_length_scale": "2e5",
@@ -137,6 +137,7 @@
           "bc": "1"
         },
         "linearmodel": {
+          "version": "QgTLM",
           "tstep": "PT1H",
           "top_layer_depth": "5500.0",
           "bottom_layer_depth": "4500.0",
@@ -159,6 +160,7 @@
           "bc": "1"
         },
         "linearmodel": {
+          "version": "QgTLM",
           "tstep": "PT1H",
           "top_layer_depth": "5500.0",
           "bottom_layer_depth": "4500.0",

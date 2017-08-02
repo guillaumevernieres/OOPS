@@ -71,13 +71,13 @@ template<typename MODEL> class RPCGMinimizer : public DualMinimizer<MODEL> {
   typedef RinvMatrix<MODEL>          Rinv_;
 
  public:
-  const std::string classname() const {return "RPCGMinimizer";}
+  const std::string classname() const override {return "RPCGMinimizer";}
   RPCGMinimizer(const eckit::Configuration &, const CostFct_ & J): DualMinimizer<MODEL>(J) {}
   ~RPCGMinimizer() {}
 
  private:
   double solve(Dual_ &, double &, Dual_ &, const HBHt_ &, const Rinv_ &,
-               const int &, const double &, Dual_ &, const double &);
+               const int &, const double &, Dual_ &, const double &) override;
 };
 
 // =============================================================================

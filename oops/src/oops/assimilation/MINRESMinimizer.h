@@ -36,14 +36,14 @@ template<typename MODEL> class MINRESMinimizer : public PrimalMinimizer<MODEL> {
   typedef HessianMatrix<MODEL>       Hessian_;
 
  public:
-  const std::string classname() const {return "MINRESMinimizer";}
+  const std::string classname() const override {return "MINRESMinimizer";}
   MINRESMinimizer(const eckit::Configuration &, const CostFct_ & J): PrimalMinimizer<MODEL>(J) {}
   ~MINRESMinimizer() {}
 
  private:
-  virtual double solve(CtrlInc_ &, const CtrlInc_ &,
-                       const Hessian_ &, const Bmat_ &,
-                       const int, const double);
+  double solve(CtrlInc_ &, const CtrlInc_ &,
+               const Hessian_ &, const Bmat_ &,
+               const int, const double) override;
 };
 
 // =============================================================================

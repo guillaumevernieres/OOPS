@@ -42,8 +42,8 @@ template<typename MODEL> class PrimalMinimizer : public Minimizer<MODEL> {
  public:
   explicit PrimalMinimizer(const CostFct_ & J): J_(J) {}
   ~PrimalMinimizer() {}
-  CtrlInc_ * minimize(const eckit::Configuration &);
-  virtual const std::string classname() const =0;
+  CtrlInc_ * minimize(const eckit::Configuration &) override;
+  virtual const std::string classname() const override =0;
 
  private:
   virtual double solve(CtrlInc_ &, const CtrlInc_ &,

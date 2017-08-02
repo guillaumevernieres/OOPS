@@ -50,8 +50,8 @@ template<typename MODEL> class DualMinimizer : public Minimizer<MODEL> {
  public:
   explicit DualMinimizer(const CostFct_ & J): J_(J), gradJb_(0) {}
   ~DualMinimizer() {}
-  CtrlInc_ *  minimize(const eckit::Configuration &);
-  virtual const std::string classname() const =0;
+  CtrlInc_ *  minimize(const eckit::Configuration &) override;
+  virtual const std::string classname() const override =0;
 
  private:
   virtual double solve(Dual_ &, double &, Dual_ &, const HBHt_ &, const Rinv_ &,

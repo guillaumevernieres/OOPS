@@ -9,11 +9,13 @@
  */
 
 #include "lorenz95/L95Traits.h"
+#include "lorenz95/instantiateTlmFactory.h"
 #include "oops/runs/Run.h"
 #include "test/interface/LinearModel.h"
 
 int main(int argc,  char ** argv) {
   oops::Run run(argc, argv);
+  lorenz95::instantiateTlmFactory();
   test::LinearModel<lorenz95::L95Traits> tests;
   run.execute(tests);
   return 0;

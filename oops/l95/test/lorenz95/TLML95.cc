@@ -26,11 +26,12 @@
 #include "lorenz95/TLML95.h"
 #include "util/DateTime.h"
 #include "util/Duration.h"
+#include "test/TestFixture.h"
 
 namespace test {
 
 // -----------------------------------------------------------------------------
-class TlmTestFixture {
+class TlmTestFixture : TestFixture {
  public:
   TlmTestFixture() {
     eckit::LocalConfiguration res(TestConfig::config(), "resolution");

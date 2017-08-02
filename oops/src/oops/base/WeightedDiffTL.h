@@ -51,13 +51,13 @@ class WeightedDiffTL : public PostBaseTL<INCR> {
 
   virtual ~WeightedDiffTL() {}
 
-  INCR * releaseOutputFromTL();
+  INCR * releaseOutputFromTL() override;
 
  private:
 
-  void doInitializeTL(const INCR &, const util::DateTime &, const util::Duration &);
-  void doProcessingTL(const INCR &);
-  void doFinalizeTL(const INCR &) {}
+  void doInitializeTL(const INCR &, const util::DateTime &, const util::Duration &) override;
+  void doProcessingTL(const INCR &) override;
+  void doFinalizeTL(const INCR &) override {}
 
   WeightingFct & wfct_;
   std::map< util::DateTime, double > weights_;
