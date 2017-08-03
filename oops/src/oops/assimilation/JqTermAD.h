@@ -34,9 +34,9 @@ template <typename MODEL> class JqTermAD : public PostBaseAD<Increment<MODEL> > 
   void clear() {xi_.clear();}
 
  private:
-  void doFirstAD(Increment_ &, const util::DateTime &, const util::Duration &) override;
-  void doProcessingAD(Increment_ &) override {}
-  void doLastAD(Increment_ &) override {}
+  void doFirstAD(Increment_ &, const util::DateTime &, const util::Duration &);
+  void doProcessingAD(Increment_ &) {}
+  void doLastAD(Increment_ &) {}
 
   const unsigned nsubwin_;
   unsigned current_;

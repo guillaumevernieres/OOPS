@@ -18,13 +18,12 @@
 #include "eckit/filesystem/marsfs/MarsFSClient.h"
 #include "eckit/filesystem/marsfs/MarsFSPath.h"
 #include "eckit/net/TCPClient.h"
-#include "eckit/memory/ScopedPtr.h"
-#include "eckit/utils/Hash.h"
 
+//-----------------------------------------------------------------------------
 
 namespace eckit {
 
-//----------------------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 class MarsFSFile : private MarsFSClient {
 public:
@@ -97,8 +96,6 @@ private:
     MarsFSPath path_;
 	AutoLock<Connector> lock_;
 
-    eckit::ScopedPtr<Hash> hash_;
-
 // -- Methods
 	// None
 
@@ -118,7 +115,8 @@ private:
 
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
 
 } // namespace eckit
 

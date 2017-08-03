@@ -21,21 +21,14 @@ namespace eckit {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-typedef void (*abort_handler_t)();
-
 class LibEcKit : public eckit::system::Library {
-
-public: // methods
+public:
 
     LibEcKit();
 
-    static LibEcKit& instance();
+    static const LibEcKit& instance();
 
-    void setAbortHandler(abort_handler_t h);
-
-    void abort();
-
-protected: // methods
+protected:
 
     const void* addr() const;
 
@@ -43,9 +36,6 @@ protected: // methods
 
     virtual std::string gitsha1(unsigned int count) const;
 
-private: // members
-
-    abort_handler_t abort_handler_;
 };
 
 //----------------------------------------------------------------------------------------------------------------------

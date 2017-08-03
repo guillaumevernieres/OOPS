@@ -48,9 +48,9 @@ template <typename MODEL, typename INCR> class ObserverAD : public PostBaseAD<IN
 
  private:
 // Methods
-  void doFirstAD(INCR &, const util::DateTime &, const util::Duration &) override;
-  void doProcessingAD(INCR &) override;
-  void doLastAD(INCR &) override;
+  void doFirstAD(INCR &, const util::DateTime &, const util::Duration &);
+  void doProcessingAD(INCR &);
+  void doLastAD(INCR &);
 
 // Obs operator
   ObsSpace_ obspace_;

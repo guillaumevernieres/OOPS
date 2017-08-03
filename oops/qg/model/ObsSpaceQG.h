@@ -15,12 +15,11 @@
 #include <ostream>
 #include <string>
 
-#include "util/DateTime.h"
 #include "util/Logger.h"
-#include "util/Printable.h"
-
 #include "model/ObsHelpQG.h"
 #include "model/QgFortran.h"
+#include "util/DateTime.h"
+#include "util/Printable.h"
 
 // Forward declarations
 namespace eckit {
@@ -28,7 +27,6 @@ namespace eckit {
 }
 
 namespace qg {
-  class ObsVecQG;
   class QgObservation;
 
 /// Wrapper around ObsHelpQG, mostly to hide the factory
@@ -55,8 +53,6 @@ class ObsSpaceQG : public util::Printable {
   void generateDistribution(const eckit::Configuration & conf) {
     helper_->generateDistribution(conf, obsname_, winbgn_, winend_, nobs_);
   }
- 
-  void printJo(const ObsVecQG &, const ObsVecQG &);
 
   int nobs() const {return nobs_;}
   int nvin() const {return nvin_;}

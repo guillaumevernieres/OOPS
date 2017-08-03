@@ -15,3 +15,5 @@ if( HAVE_EXPERIMENTAL )
 endif()
 
 add_subdirectory( apps )
+
+add_subdirectory( tests )

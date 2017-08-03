@@ -17,7 +17,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "eckit/runtime/Main.h"
-#include "eckit/config/YAMLConfiguration.h"
+#include "eckit/config/JSONConfiguration.h"
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 
@@ -40,18 +40,19 @@ public:
 
   TestConfig() {
 
-    ASSERT( eckit::Main::ready() );
+    eckit::Main::initialise(boost::unit_test::framework::master_test_suite().argc,
+                            boost::unit_test::framework::master_test_suite().argv);
 
-    int narg = eckit::Main::instance().argc();
+    int narg = boost::unit_test::framework::master_test_suite().argc;
     ASSERT(narg >= 2);
-    eckit::PathName fname = eckit::Main::instance().argv(narg-1);
-    config_.reset(new eckit::YAMLConfiguration(fname));
+    std::string fname = boost::unit_test::framework::master_test_suite().argv[narg - 1];
+    config_.reset(new eckit::JSONConfiguration(fname));
   }
 
   ~TestConfig() {}
 
 private:
-  boost::scoped_ptr<const eckit::YAMLConfiguration> config_;
+  boost::scoped_ptr<const eckit::JSONConfiguration> config_;
 };
 
 // -----------------------------------------------------------------------------

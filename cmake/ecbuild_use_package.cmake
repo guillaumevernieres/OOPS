@@ -162,6 +162,7 @@ macro( ecbuild_use_package )
 
   # check if was already added as subproject ...
 
+  set( _just_added 0 )
   set( _do_version_check 0 )
   set( _source_description "" )
 
@@ -169,8 +170,10 @@ macro( ecbuild_use_package )
 
   if( NOT _ecbuild_project_${pkgUPPER} EQUAL "-1" )
     ecbuild_debug("ecbuild_use_package(${_p_PROJECT}): ${_p_PROJECT} was previously added as a subproject")
+    set( ${pkgUPPER}_previous_subproj_ 1 )
   else()
     ecbuild_debug("ecbuild_use_package(${_p_PROJECT}): ${_p_PROJECT} was not previously added as a subproject")
+    set( ${pkgUPPER}_previous_subproj_ 0 )
   endif()
 
   # solve capitalization issues
@@ -182,30 +185,25 @@ macro( ecbuild_use_package )
     set( ${_p_PROJECT}_FOUND 1 )
   endif()
 
-  # Case 1) project exists as subproject
+  # Case 1) project was NOT previously added as subproject and is NOT already FOUND
 
-  if( DEFINED ${pkgUPPER}_subproj_dir_ )
+  if( NOT ${pkgUPPER}_FOUND AND NOT ${pkgUPPER}_previous_subproj_ )
 
-    # check version is acceptable
-    set( _do_version_check 1 )
+    # check if SUBPROJDIR is set
 
-    # Case 1a) project was already found
+    if( DEFINED ${pkgUPPER}_subproj_dir_ )
 
-    if( ${pkgUPPER}_FOUND )
+      ecbuild_debug("ecbuild_use_package(${_p_PROJECT}): 1) project was NOT previously added as subproject and is NOT already FOUND")
 
-      ecbuild_debug("ecbuild_use_package(${_p_PROJECT}): 1a) project was already added as subproject, check version is acceptable")
-
-      set( _source_description "already existing sub-project ${_p_PROJECT} (sources)" )
-
-    # Case 1b) project was not already found
-
-    else()
-
-      ecbuild_debug("ecbuild_use_package(${_p_PROJECT}): 1b) project is NOT already FOUND and exists as subproject")
-
+      # check version is acceptable
+      set( _just_added 1 )
+      set( _do_version_check 1 )
       set( _source_description "sub-project ${_p_PROJECT} (sources)" )
 
       # add as a subproject
+
+      set( ${pkgUPPER}_subproj_dir_ ${${pkgUPPER}_subproj_dir_} CACHE PATH "Path to ${_p_PROJECT} source directory" )
+      mark_as_advanced( ${pkgUPPER}_subproj_dir_ )
 
       set( ECBUILD_PROJECTS ${ECBUILD_PROJECTS} ${_p_PROJECT} CACHE INTERNAL "" )
 
@@ -223,12 +221,27 @@ macro( ecbuild_use_package )
 
   endif()
 
-  # Case 2) project does NOT exist as subproject, but is FOUND
-  #   it was previously found as a binary ( either build or install tree )
+  # Case 2) project was already added as subproject, so is already FOUND -- BUT must check version acceptable
 
-  if( ${pkgUPPER}_FOUND AND NOT ${pkgUPPER}_subproj_dir_ )
+  if( ${pkgUPPER}_previous_subproj_ )
 
-    ecbuild_debug("ecbuild_use_package(${_p_PROJECT}): 2) project does NOT exist as subproject, but is FOUND")
+    ecbuild_debug("ecbuild_use_package(${_p_PROJECT}): 2) project was already added as subproject, check version is acceptable")
+
+    if( NOT ${pkgUPPER}_FOUND )
+      ecbuild_critical( "${_p_PROJECT} was already included as sub-project but ${pkgUPPER}_FOUND isn't set -- this is likely a BUG in ecbuild" )
+    endif()
+
+    # check version is acceptable
+    set( _do_version_check 1 )
+    set( _source_description "already existing sub-project ${_p_PROJECT} (sources)" )
+
+  endif()
+
+  # Case 3) project was NOT added as subproject, but is FOUND -- so it was previously found as a binary ( either build or install tree )
+
+  if( ${pkgUPPER}_FOUND AND NOT ${pkgUPPER}_previous_subproj_ AND NOT _just_added )
+
+    ecbuild_debug("ecbuild_use_package(${_p_PROJECT}): 3) project was NOT previously added as subproject, but is FOUND")
 
     # check version is acceptable
     set( _do_version_check 1 )
@@ -242,6 +255,7 @@ macro( ecbuild_use_package )
   # ecbuild_debug_var( _p_VERSION )
   # ecbuild_debug_var( ${pkgUPPER}_VERSION )
   # ecbuild_debug_var( ${_p_PROJECT}_VERSION )
+  # ecbuild_debug_var( _just_added )
   # ecbuild_debug_var( _do_version_check )
   # ecbuild_debug_var( _source_description )
   # ecbuild_debug_var( ${pkgUPPER}_FOUND )
@@ -261,7 +275,7 @@ macro( ecbuild_use_package )
     endif()
   endif()
 
-  # Case 3) is NOT FOUND so far, NOT as sub-project (now or before), and NOT as binary neither
+  # Case 4) is NOT FOUND so far, NOT as sub-project (now or before), and NOT as binary neither
   #         so try to find precompiled binaries or a build tree
 
   if( ${pkgUPPER}_FOUND )
@@ -275,7 +289,7 @@ macro( ecbuild_use_package )
                             PURPOSE "${_p_PURPOSE}" )
   else()
 
-    ecbuild_debug("ecbuild_use_package(${_p_PROJECT}): 3) project does NOT exist as subproject and is NOT already FOUND")
+    ecbuild_debug("ecbuild_use_package(${_p_PROJECT}): 4) project has NOT been added as a subproject and is NOT already FOUND")
 
     set( _opts )
     if( _p_VERSION )

@@ -17,8 +17,8 @@
 namespace eckit {
 
 ResourceBase::ResourceBase(Configurable* owner, const std::string& str):
-    owner_(owner),
-    inited_(false)
+    inited_(false),
+    owner_(owner)
 {
     if (owner_) owner_->add(this);
 
@@ -30,9 +30,10 @@ ResourceBase::ResourceBase(Configurable* owner, const std::string& str):
         char   x  = *p;
         int len   = 0;
 
-        switch (x) {
-            case '$': s = &environment_; break;
-            case '-': s = &options_;     break;
+        switch (x)
+        {
+        case '$': s = &environment_; break;
+        case '-': s = &options_;     break;
         }
 
         *s = p;
@@ -53,24 +54,6 @@ ResourceBase::ResourceBase(Configurable* owner, const std::string& str):
 ResourceBase::~ResourceBase()
 {
     if (owner_) owner_->remove(this);
-}
-
-bool ResourceBase::setFromConfigFile()
-{
-    bool found = false;
-
-    std::string s;
-
-    if (owner_)
-        found = ResourceMgr::lookUp(owner_->kind(), owner_->name(), name_, s);
-    else
-        found = ResourceMgr::lookUp("", "", name_, s);
-
-    if (found) {
-        setValue(s);
-    }
-
-    return found;
 }
 
 void ResourceBase::init()
@@ -110,10 +93,18 @@ void ResourceBase::init()
 
     if (name_ != "")
     {
-        if(setFromConfigFile()) {
-            inited_ = true;
-            return;
-        }
+        bool found = false;
+        std::string s;
+
+        if (owner_)
+            found = ResourceMgr::lookUp(owner_->kind(), owner_->name(), name_, s);
+        else
+            found = ResourceMgr::lookUp("", "", name_, s);
+
+        if (found) setValue(s);
+
+        inited_ = true;
+        return;
     }
 
     // Else use default. This is done in Resource

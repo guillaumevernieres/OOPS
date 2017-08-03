@@ -1,7 +1,5 @@
 
 module fckit_resource_module
-  !! Fortran interface to eckit Resource
-
 implicit none
 private
 

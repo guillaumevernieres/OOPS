@@ -15,12 +15,11 @@
 #include <map>
 #include <string>
 
-#include "eckit/config/Configuration.h"
-
+#include "util/Logger.h"
 #include "oops/interface/ObservationSpace.h"
 #include "oops/interface/ObsVector.h"
+#include "eckit/config/Configuration.h"
 #include "util/abor1_cpp.h"
-#include "util/Logger.h"
 #include "util/Printable.h"
 
 namespace oops {

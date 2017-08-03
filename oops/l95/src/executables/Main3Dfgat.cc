@@ -10,13 +10,11 @@
 
 #include "oops/runs/Variational.h"
 #include "oops/runs/Run.h"
-#include "lorenz95/L95Traits.h"
-#include "lorenz95/instantiateTlmFactory.h"
+#include "lorenz95/L95TraitFGAT.h"
 
 int main(int argc, char ** argv) {
   oops::Run run(argc, argv);
-  lorenz95::instantiateTlmFactory();
-  oops::Variational<lorenz95::L95Traits> var;
+  oops::Variational<lorenz95::L95TraitFGAT> var;
   run.execute(var);
   return 0;
 };

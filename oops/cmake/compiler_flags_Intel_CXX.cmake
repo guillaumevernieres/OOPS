@@ -11,9 +11,9 @@
 ####################################################################
 
 if( HAVE_OMP )
-  set( CMAKE_CXX_FLAGS     "${CMAKE_CXX_FLAGS} -qopenmp")
+  set( CMAKE_CXX_FLAGS     "${CMAKE_CXX_FLAGS} -openmp")
 else( )
-  set( CMAKE_CXX_FLAGS     "${CMAKE_CXX_FLAGS} -qopenmp-stubs")
+  set( CMAKE_CXX_FLAGS     "${CMAKE_CXX_FLAGS} -openmp-stubs")
 endif( )
 
 ####################################################################

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef fckit_log_Log_h
+#define fckit_log_Log_h
 
 #include "eckit/log/Log.h"
 
@@ -13,19 +14,11 @@ public:
   static void addFortranUnit(int unit, Style=PREFIX, const char* prefix="");
   static void setFortranUnit(int unit, Style=PREFIX, const char* prefix="");
 
-  static void addFile(const char* path, Style=PREFIX, const char* prefix="");
-  static void setFile(const char* path, Style=PREFIX, const char* prefix="");
-
-  static void addStdOut(Style=PREFIX, const char* prefix="");
-  static void setStdOut(Style=PREFIX, const char* prefix="");
-
-  static void reset();
-
-  static void flush();
-
   // Fortran unit numbers
   static int output_unit();
   static int error_unit();
 };
 
 } // namespace fckit
+
+#endif

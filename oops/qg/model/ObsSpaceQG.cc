@@ -13,12 +13,9 @@
 #include <map>
 #include <string>
 
-#include "eckit/config/Configuration.h"
-
-#include "util/abor1_cpp.h"
 #include "util/Logger.h"
-
-#include "model/ObsVecQG.h"
+#include "eckit/config/Configuration.h"
+#include "util/abor1_cpp.h"
 
 using oops::Log;
 
@@ -81,12 +78,6 @@ ObsSpaceQG::ObsSpaceQG(const eckit::Configuration & config,
   if (obsname_ == "Wind") nvin_ = 2;
   ASSERT(nvin_ > 0);
 }
-
-// -----------------------------------------------------------------------------
-
-void ObsSpaceQG::printJo(const ObsVecQG & dy, const ObsVecQG & grad) {
-  Log::info() << "ObsSpaceQG::printJo not implemented" << std::endl;
-} 
 
 // -----------------------------------------------------------------------------
 

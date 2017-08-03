@@ -11,9 +11,9 @@
 ####################################################################
 
 if( HAVE_OMP )
-  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -qopenmp")
+  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -openmp")
 else( )
-  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -qopenmp-stubs")
+  set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -openmp-stubs")
 endif( )
 
 ####################################################################

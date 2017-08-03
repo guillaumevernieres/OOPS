@@ -1,7 +1,6 @@
 list( APPEND oops_qg_src_files
 GomQG.cc
 GomQG.h
-instantiateTlmFactory.h
 LinearObsOp.h
 LocQG.h
 LocalizationMatrixQG.cc
@@ -40,6 +39,8 @@ QgFields.h
 QgFortran.h
 QgGeometry.cc
 QgGeometry.h
+QgIdTLM.cc
+QgIdTLM.h
 QgIncrement.cc
 QgIncrement.h
 QgModel.cc
@@ -48,11 +49,10 @@ QgObservation.cc
 QgObservation.h
 QgState.cc
 QgState.h
-QgIdTLM.cc
-QgIdTLM.h
 QgTLM.cc
 QgTLM.h
 QgTraits.h
+QgTraitFGAT.h
 VarQG.cc
 VarQG.h
 advect_pv.f90

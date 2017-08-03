@@ -8,6 +8,7 @@
  * does it submit to any jurisdiction.
  */
 
+/// @file Log.h
 /// @author Baudouin Raoult
 /// @author Tiago Quintino
 /// @date May 1996
@@ -17,17 +18,63 @@
 
 #include <string>
 
-#include "eckit/config/ResourceBase.h"
+#include "eckit/memory/NonCopyable.h"
+#include "eckit/utils/Translator.h"
 
 namespace eckit {
 
+class Configurable;
+class Url;
 
-//----------------------------------------------------------------------------------------------------------------------
+class ResourceBase : private NonCopyable {
+public:
 
-template<class T>
-class Resource : public ResourceBase {
+// -- Contructors
 
-public: // methods
+    ResourceBase(Configurable* owner, const std::string& str);
+
+// -- Destructor
+
+    virtual ~ResourceBase();
+
+// -- Methods
+
+    void reset()            { inited_ = false;   }
+    void dump(std::ostream&) const;
+    void html(std::ostream&, Url&);
+
+    std::string name() const;
+
+protected:
+
+// -- Methods
+
+    void init();
+
+private:
+
+// -- Members
+
+    bool           inited_;
+    Configurable*  owner_;
+    std::string         name_;        // In the config file
+    std::string         environment_; // In the environment variables
+    std::string         options_;     // For the command line options
+
+// -- Methods
+
+    virtual void setValue(const std::string&) = 0;
+    virtual std::string getValue() const      = 0;
+
+};
+
+
+
+
+template<class T> class Resource : public ResourceBase {
+public:
+
+// -- Contructors
 
     // Standalone
 
@@ -44,23 +91,20 @@ public: // methods
 
 // -- Convertors
 
-    operator const T&()  const { const_cast<Resource<T>*>(this)->init(); return value_; }
+    operator const T&()  const { const_cast<Resource<T>*>(this)->init(); return value_;        }
 
-private: // members
+private:
+
+// -- Members
 
     T value_;
 
+// -- Overridden methods
+
     // From ResourceBase
 
-    virtual void setValue(const std::string& s)
-    {
-        value_ = Translator<std::string, T>()(s);
-    }
-
-    virtual std::string getValue() const
-    {
-        return Translator<T, std::string>()(value_);
-    }
+    virtual void setValue(const std::string&);
+    virtual std::string getValue() const;
 
 };
 
@@ -70,53 +114,8 @@ std::ostream& operator<<(std::ostream& os, const Resource<T>& r) {
     return os;
 }
 
-//----------------------------------------------------------------------------------------------------------------------
+}
 
-
-template<class T, class LIB>
-class LibResource : public ResourceBase {
-
-public: // methods
-
-    LibResource(const std::string& str, const T& value) : ResourceBase(0, str), value_(value) {}
-
-    operator const T&()  const { const_cast<LibResource<T,LIB>*>(this)->init(); return value_; }
-
-    friend std::ostream& operator<< (std::ostream& os, const LibResource<T,LIB>& r) {
-        os << static_cast<const T&>(r);
-        return os;
-    }
-
-private: // members
-
-    T value_;
-
-    // From ResourceBase
-
-    virtual void setValue(const std::string& s)
-    {
-        value_ = Translator<std::string, T>()(s);
-    }
-
-    virtual std::string getValue() const
-    {
-        return Translator<T, std::string>()(value_);
-    }
-
-    virtual bool setFromConfigFile() {
-
-        std::string value;
-
-        if(LIB::instance().configuration().get(name(), value)) {
-            setValue(value);
-            return true;
-        }
-        return false;
-    }
-};
-
-//----------------------------------------------------------------------------------------------------------------------
-
-} // namespace eckit
+#include "eckit/config/Resource.cc"
 
 #endif

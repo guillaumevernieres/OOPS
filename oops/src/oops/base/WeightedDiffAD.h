@@ -47,9 +47,9 @@ class WeightedDiffAD : public PostBaseAD<INCR> {
 
  private:
 
-  void doFirstAD(INCR &, const util::DateTime &, const util::Duration &) override;
-  void doProcessingAD(INCR &) override;
-  void doLastAD(INCR &) override {}
+  void doFirstAD(INCR &, const util::DateTime &, const util::Duration &);
+  void doProcessingAD(INCR &);
+  void doLastAD(INCR &) {}
 
   WeightingFct & wfct_;
   std::map< util::DateTime, double > weights_;

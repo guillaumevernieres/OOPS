@@ -8,49 +8,29 @@
  * does it submit to any jurisdiction.
  */
 
-#include <string>
-#include <algorithm>
-
 #include "fckit/Libfckit.h"
-#include "fckit/fckit_defines.h"
-#include "eckit/eckit_version.h"
 
 namespace fckit {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-// Support for eckit 0.16.5 improved library registration using REGISTER_LIBRARY macro
-// See issue ECKIT-244
-#ifdef REGISTER_LIBRARY
-#define DECLARE_STATIC(Library,lib) static Library lib
-#else
-#define REGISTER_LIBRARY(Library) static Library library
-#define DECLARE_STATIC(Library,lib)
-#endif
-
-REGISTER_LIBRARY(Libfckit);
+static Libfckit library;
 
 Libfckit::Libfckit() : eckit::system::Library("fckit") {}
 
 const Libfckit& Libfckit::instance()
 {
-    DECLARE_STATIC(Libfckit,library);
     return library;
 }
 
 const void* Libfckit::addr() const { return this; }
 
 std::string Libfckit::version() const {
-    return FCKIT_VERSION;
+    return "not available";
 }
 
 std::string Libfckit::gitsha1(unsigned int count) const {
-    static std::string sha1(FCKIT_GIT_SHA1);
-    if(sha1.empty()) {
-        return "not available";
-    }
-    sha1 = sha1.substr(0, std::min(count,40u));
-    return sha1.c_str();
+    return "not available";
 }
 
 //----------------------------------------------------------------------------------------------------------------------

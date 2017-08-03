@@ -45,7 +45,6 @@ util/TimerHelper.cc
 util/utilNamespaceDoc.h
 util/Logger.h
 
-oops/assimilation/BHessianMatrix.h
 oops/assimilation/BMatrix.h
 oops/assimilation/ControlIncrement.h
 oops/assimilation/ControlVariable.h
@@ -76,8 +75,6 @@ oops/assimilation/FullGMRES.h
 oops/assimilation/GMRESR.h
 oops/assimilation/GMRESRMinimizer.h
 oops/assimilation/HBHtMatrix.h
-oops/assimilation/LBGMRESRMinimizer.h
-oops/assimilation/LBMinimizer.h
 oops/assimilation/BMatrix.h
 oops/assimilation/HMatrix.h
 oops/assimilation/HessianMatrix.h
@@ -151,15 +148,12 @@ oops/base/WeightingFct.h
 oops/base/WeightingFct.cc
 oops/base/instantiateCovarFactory.h
 
-oops/generic/LinearModelId.h
 oops/generic/ObsErrorDiag.h
 oops/generic/instantiateObsErrorFactory.h
-oops/generic/instantiateTlmFactory.h
 
 oops/interface/ErrorCovariance.h
 oops/interface/Geometry.h
 oops/interface/Increment.h
-oops/interface/LinearModelBase.h
 oops/interface/LinearModel.h
 oops/interface/LinearObsOperator.h
 oops/interface/Localization.h

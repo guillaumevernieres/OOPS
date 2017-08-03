@@ -60,8 +60,6 @@ macro( ecbuild_add_persistent )
     ecbuild_critical("The call to ecbuild_add_persistent() doesn't specify the FILES.")
   endif()
 
-  ecbuild_debug( "ecbuild_add_persistent: adding persistent layer for ${_PAR_FILES}" )
-
   foreach( file ${_PAR_FILES} )
 
     get_filename_component( _file_dir    ${file} PATH )
@@ -73,7 +71,7 @@ macro( ecbuild_add_persistent )
       set( file ${_file_dir}/${_file_we} )
     endif()
 
-    ecbuild_debug( "ecbuild_add_persistent: adding persistent layer for ${file}.b with namespace ${_PAR_NAMESPACE} from ${file}.h in ${CMAKE_CURRENT_BINARY_DIR}/${_file_dir}" )
+    # ecbuild_debug_var(file)
 
     add_custom_command( OUTPUT  ${file}.b
                         COMMAND ${PERL_EXECUTABLE} ${sg_perl} ${CMAKE_CURRENT_SOURCE_DIR}/${file}.h

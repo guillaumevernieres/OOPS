@@ -20,6 +20,8 @@ namespace eckit {
 
 //----------------------------------------------------------------------------------------------------------------------
 
+typedef void (*abort_handler_t)();
+
 class LogStream;
 class PathName;
 
@@ -50,12 +52,7 @@ public: // methods
 
     // From Configurable
 
-    /// Name of the program as called from the command-line
-    virtual const std::string& name() const;
-
-    /// Name to display in logs. Default is name(), but can be configured
-    /// differently.
-    virtual const std::string& displayName() const;
+    virtual std::string name() const;
 
     /// Ensure that there exits a Main object. This is to be used
     /// For unit tests and fortran bindinds only
@@ -63,10 +60,6 @@ public: // methods
 
     // To be used before main() to check if the instance is ready
     static bool ready();
-
-    // Check if debugging was set to on (either through environment variable "DEBUG=1",
-    // or command-line argument "--debug" or "-debug".
-    virtual bool debug() const;
 
     /// Channel handling
 
@@ -92,9 +85,8 @@ private: // members
 
     std::string  home_; ///< path to the home, may be redefined so not necessarily the same as environment variable HOME
 
-    bool debug_;
-
     friend class Log;
+    bool debug_;
 
 };
 

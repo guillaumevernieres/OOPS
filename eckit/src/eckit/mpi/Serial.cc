@@ -10,7 +10,6 @@
 
 #include "eckit/mpi/Serial.h"
 
-#include <errno.h>
 #include <unistd.h>
 #include <limits>
 #include <deque>
@@ -22,9 +21,6 @@
 #include "eckit/thread/AutoLock.h"
 #include "eckit/thread/Mutex.h"
 #include "eckit/maths/Functions.h"
-#include "eckit/filesystem/PathName.h"
-#include "eckit/memory/ScopedPtr.h"
-#include "eckit/io/DataHandle.h"
 
 namespace eckit {
 namespace mpi {
@@ -158,9 +154,7 @@ void Serial::barrier() const {
 }
 
 void Serial::abort(int) const {
-    // Don't use std::abort as it would raise SIGABRT.
-    // MPI_Abort also does not raise SIGABRT
-    std::exit(EXIT_FAILURE);
+    throw Abort("MPI Abort called");
 }
 
 Status Serial::wait(Request& req) const {
@@ -292,13 +286,6 @@ void Serial::send(const void* send, size_t count, Data::Code type, int dest, int
     SerialSendReceive::instance().addSend( Request( new SendRequest(send,count,type,tag) ) );
 }
 
-void Serial::synchronisedSend(const void* send, size_t count, Data::Code type, int dest, int tag) const
-{
-    // TODO: see if this is good enough
-    AutoLock<SerialSendReceive> lock(SerialSendReceive::instance());
-    SerialSendReceive::instance().addSend( Request( new SendRequest(send,count,type,tag) ) );
-}
-
 Request Serial::iReceive(void* recv, size_t count, Data::Code type, int source, int tag) const {
     AutoLock<SerialRequestPool> lock(SerialRequestPool::instance());
     return SerialRequestPool::instance().createReceiveRequest(recv,count,type,tag);
@@ -325,29 +312,6 @@ void Serial::print(std::ostream& os) const {
 int Serial::communicator() const {
     return 0;
 }
-
-eckit::SharedBuffer Serial::broadcastFile( const PathName& filepath, size_t ) const {
-
-    eckit::Buffer* buffer;
-
-    eckit::ScopedPtr<DataHandle> dh( filepath.fileHandle() );
-
-    Length len = dh->openForRead(); AutoClose closer(*dh);
-    buffer = new eckit::Buffer(len);
-    dh->read(buffer->data(), len);
-
-    if(not len) {
-        throw ShortFile( filepath );
-    }
-
-    if(filepath.isDir()) {
-        errno = EISDIR;
-        throw CantOpenFile( filepath );
-    }
-
-    return eckit::SharedBuffer(buffer);
-}
-
 
 CommBuilder<Serial> SerialBuilder("serial");
 

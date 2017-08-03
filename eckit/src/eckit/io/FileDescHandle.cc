@@ -28,17 +28,13 @@ void FileDescHandle::encode(Stream& s) const
     NOTIMP;
 }
 
-FileDescHandle::FileDescHandle(int fd, bool close):
-    fd_(fd),
-    close_(close)
+FileDescHandle::FileDescHandle(int fd):
+    fd_(fd)
 {
 }
 
 FileDescHandle::~FileDescHandle()
 {
-    if (fd_ != -1) {
-        close();
-    }
 }
 
 Length FileDescHandle::openForRead()
@@ -54,41 +50,34 @@ void FileDescHandle::openForAppend(const Length&)
 {
 }
 
-long FileDescHandle::read(void* buffer, long length)
+long FileDescHandle::read(void* buffer,long length)
 {
-    return ::read(fd_, buffer, length);
+    return ::read(fd_,buffer,length);
 }
 
-long FileDescHandle::write(const void* buffer, long length)
+long FileDescHandle::write(const void* buffer,long length)
 {
-    return ::write(fd_, buffer, length);
+    return ::write(fd_,buffer,length);
 }
 
 void FileDescHandle::close()
 {
-    if (close_ && (fd_ != -1)) {
-        SYSCALL(::close(fd_));
-        fd_ = -1;
-    }
+    // May be we should close fd_ here ?
 }
 
 Offset FileDescHandle::position()
 {
-    off_t pos;
-    SYSCALL(pos = ::lseek(fd_, 0, SEEK_CUR));
-    return pos;
+    return ::lseek(fd_, 0, SEEK_CUR);
 }
 
 Offset FileDescHandle::seek(const Offset& o)
 {
-    off_t pos;
-    SYSCALL(pos = ::lseek(fd_, o, SEEK_SET));
-    return pos;
+    return ::lseek(fd_, o, SEEK_SET);
 }
 
 void FileDescHandle::skip(const Length& l)
 {
-    SYSCALL(::lseek(fd_, l, SEEK_CUR));
+    ::lseek(fd_, l, SEEK_CUR);
 }
 
 //-----------------------------------------------------------------------------

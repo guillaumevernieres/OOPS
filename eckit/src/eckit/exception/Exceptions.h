@@ -41,7 +41,7 @@ public: // methods
 
     /// Destructor
     /// @throws nothing
-    virtual ~Exception() throw();
+    ~Exception() throw();
 
     virtual const char *what() const throw() {  return what_.c_str(); }
     virtual bool retryOnServer() const        { return false; }
@@ -147,8 +147,7 @@ public:
 
 class Abort : public Exception {
 public:
-    Abort( const std::string& );
-    Abort( const std::string&, const CodeLocation& );
+    Abort(const std::string&);
 };
 
 class Cancel : public Exception {

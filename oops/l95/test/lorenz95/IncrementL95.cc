@@ -24,12 +24,11 @@
 #include "lorenz95/Resolution.h"
 #include "lorenz95/StateL95.h"
 #include "util/DateTime.h"
-#include "test/TestFixture.h"
 
 namespace test {
 
 // -----------------------------------------------------------------------------
-class IncrementTestFixture : TestFixture {
+class IncrementTestFixture {
  public:
   IncrementTestFixture() {
     file_.reset(new eckit::LocalConfiguration(TestConfig::config(), "state"));

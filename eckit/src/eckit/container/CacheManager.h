@@ -29,9 +29,6 @@
 #include "eckit/os/AutoUmask.h"
 #include "eckit/filesystem/PathName.h"
 #include "eckit/memory/NonCopyable.h"
-#include "eckit/parser/Tokenizer.h"
-#include "eckit/parser/StringTools.h"
-#include "eckit/filesystem/PathExpander.h"
 
 namespace eckit {
 
@@ -103,24 +100,10 @@ template<class Traits>
 CacheManager<Traits>::CacheManager(const std::string& loaderName, const std::string& roots, bool throwOnCacheMiss) :
     CacheManagerBase(loaderName),
     throwOnCacheMiss_(throwOnCacheMiss) {
-
     eckit::Tokenizer parse(":");
     std::vector<std::string> v;
     parse(roots, v);
-
-    for(std::vector<std::string>::const_iterator i = v.begin(); i != v.end(); ++i) {
-
-        std::string path = *i;
-
-        // entries with e.g. {CWDFS}/cache will be expanded with PathExpander factory CWDFS
-
-        StringList vl = StringTools::listVariables(path);
-        for(StringList::const_iterator var = vl.begin(); var != vl.end(); ++var) {
-            path = PathExpander::expand(*var, path);
-        }
-
-        roots_.push_back(path);
-    }
+    std::copy(v.begin(), v.end(), std::back_inserter(roots_));
 
     Log::debug<LibEcKit>() << "CacheManager roots " << roots_ << std::endl;
 

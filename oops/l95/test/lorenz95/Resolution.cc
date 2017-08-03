@@ -18,12 +18,11 @@
 #include "eckit/config/LocalConfiguration.h"
 #include "./TestConfig.h"
 #include "lorenz95/Resolution.h"
-#include "test/TestFixture.h"
 
 namespace test {
 
 // -----------------------------------------------------------------------------
-class ResolutionTestFixture : TestFixture {
+class ResolutionTestFixture {
  public:
   ResolutionTestFixture() {
     testconf_.reset(new eckit::LocalConfiguration(TestConfig::config(), "resolution"));

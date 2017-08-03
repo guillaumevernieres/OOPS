@@ -10,14 +10,12 @@
 
 #include "model/QgTraits.h"
 #include "model/instantiateQgObsFactory.h"
-#include "model/instantiateTlmFactory.h"
 #include "oops/runs/Variational.h"
 #include "oops/runs/Run.h"
 
 int main(int argc,  char ** argv) {
   oops::Run run(argc, argv);
   qg::instantiateQgObsFactory();
-  qg::instantiateTlmFactory();
   oops::Variational<qg::QgTraits> var;
   run.execute(var);
   return 0;

@@ -15,7 +15,6 @@
 
 #include "eckit/eckit.h"
 #include "eckit/exception/Exceptions.h"
-#include "eckit/utils/Hash.h"
 
 //-----------------------------------------------------------------------------
 
@@ -59,7 +58,7 @@ public:
 // -- Methods
 
 	// I/O
-    long write(const void* buf, long length);
+	long write(const void*,long);
 
 	/// Read from a TCP socket
 	///

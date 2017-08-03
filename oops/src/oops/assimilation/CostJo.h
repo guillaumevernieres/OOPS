@@ -74,36 +74,33 @@ template<typename MODEL> class CostJo : public CostTermBase<MODEL>,
   virtual ~CostJo() {}
 
   /// Initialize \f$ J_o\f$ before starting the integration of the model.
-  boost::shared_ptr<PostBase<State_> > initialize(const CtrlVar_ &) const override;
+  boost::shared_ptr<PostBase<State_> > initialize(const CtrlVar_ &) const;
   boost::shared_ptr<PostBase<State_> > initializeTraj(const CtrlVar_ &,
                                                       const Geometry_ &,
-                                                      const eckit::Configuration &) override;
+                                                      const eckit::Configuration &);
   /// Finalize \f$ J_o\f$ after the integration of the model.
-  double finalize(const eckit::Configuration &) const override;
-  double finalizeTraj(const eckit::Configuration &) override;
+  double finalize(const eckit::Configuration &) const;
+  double finalizeTraj(const eckit::Configuration &);
 
   /// Initialize \f$ J_o\f$ before starting the TL run.
-  boost::shared_ptr<PostBaseTL<Increment_> > setupTL(const CtrlInc_ &) const override;
+  boost::shared_ptr<PostBaseTL<Increment_> > setupTL(const CtrlInc_ &) const;
 
   /// Initialize \f$ J_o\f$ before starting the AD run.
   boost::shared_ptr<PostBaseAD<Increment_> > setupAD(
-           boost::shared_ptr<const GeneralizedDepartures>, CtrlInc_ &) const override;
+           boost::shared_ptr<const GeneralizedDepartures>, CtrlInc_ &) const;
 
   /// Multiply by \f$ R\f$ and \f$ R^{-1}\f$.
-  Departures_ * multiplyCovar(const GeneralizedDepartures &) const override;
-  Departures_ * multiplyCoInv(const GeneralizedDepartures &) const override;
+  Departures_ * multiplyCovar(const GeneralizedDepartures &) const;
+  Departures_ * multiplyCoInv(const GeneralizedDepartures &) const;
 
   /// Provide new departure.
-  Departures_ * newDualVector() const override;
+  Departures_ * newDualVector() const;
 
   /// Return gradient at first guess ie \f$ R^{-1} {\cal H}(x^t ) - y\f$.
-  Departures_ * newGradientFG() const override {return new Departures_(*gradFG_);}
+  Departures_ * newGradientFG() const {return new Departures_(*gradFG_);}
 
   /// Reset obs operator trajectory.
-  void resetLinearization() override;
-
-  /// Print Jo 
-  double printJo(const Departures_ &, const Departures_ &) const;
+  void resetLinearization();
 
  private:
   const ObsSpace_ obspace_;
@@ -169,7 +166,18 @@ double CostJo<MODEL>::finalize(const eckit::Configuration & conf) const {
 
   boost::scoped_ptr<Departures_> grad(R_.inverseMultiply(ydep));
 
-  double zjo = this->printJo(ydep, *grad);
+  const double zjo = 0.5 * dot_product(ydep, *grad);
+
+  const unsigned nobs = ydep.numberOfObs();
+  if (nobs > 0) {
+    Log::test() << "CostJo   : Nonlinear Jo = " << zjo
+                     << ", nobs = " << nobs << ", Jo/n = " << zjo/nobs
+                     << ", err = " << R_.getRMSE() << std::endl;
+  } else {
+    Log::test() << "CostJo   : Nonlinear Jo = " << zjo << " --- No Observations"
+                                << std::endl;
+    Log::warning() << "CostJo: No Observations!!!" << std::endl;
+  }
 
   if (conf.has("departures")) {
     const std::string depname = conf.getString("departures");
@@ -208,7 +216,17 @@ double CostJo<MODEL>::finalizeTraj(const eckit::Configuration & conf) {
 
   gradFG_.reset(R_.inverseMultiply(ydep));
 
-  double zjo = this->printJo(ydep, *gradFG_);
+  const double zjo = 0.5 * dot_product(ydep, *gradFG_);
+
+  const unsigned nobs = ydep.numberOfObs();
+  if (nobs > 0) {
+    Log::test() << "CostJo   : Nonlinear Jo = " << zjo
+                << ", nobs = " << nobs << ", Jo/n = " << zjo/nobs
+                << ", err = " << R_.getRMSE() << std::endl;
+  } else {
+    Log::test() << "CostJo   : Nonlinear Jo = " << zjo << " --- No Observations" << std::endl;
+    Log::warning() << "CostJo: No Observations!!!" << std::endl;
+  }
 
   if (conf.has("departures")) {
     const std::string depname = conf.getString("departures");
@@ -277,29 +295,6 @@ Departures<MODEL> * CostJo<MODEL>::newDualVector() const {
 template<typename MODEL>
 void CostJo<MODEL>::resetLinearization() {
   hoptlad_.reset();
-}
-
-// -----------------------------------------------------------------------------
-
-template<typename MODEL>
-double CostJo<MODEL>::printJo(const Departures_ & dy, const Departures_ & grad) const {
-  const double zjo = 0.5 * dot_product(dy, grad);
-
-  // print Jo table
-  obspace_.printJo(dy, grad);
-
-  // print total Jo
-  const unsigned nobs = dy.numberOfObs();
-  if (nobs > 0) {
-    Log::test() << "CostJo   : Nonlinear Jo = " << zjo
-                << ", nobs = " << nobs << ", Jo/n = " << zjo/nobs
-                << ", err = " << R_.getRMSE() << std::endl;
-  } else {
-    Log::test() << "CostJo   : Nonlinear Jo = " << zjo << " --- No Observations" << std::endl;
-    Log::warning() << "CostJo: No Observations!!!" << std::endl;
-  }
-
-  return zjo;
 }
 
 // -----------------------------------------------------------------------------

@@ -27,7 +27,6 @@ namespace eckit {
 
 namespace lorenz95 {
   class GomL95;
-  class ObsTable;
 
 // -----------------------------------------------------------------------------
 /// Vector in observation space

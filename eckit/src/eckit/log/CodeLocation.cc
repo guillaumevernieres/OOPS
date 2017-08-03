@@ -25,13 +25,13 @@ std::string CodeLocation::asString() const {
 }
 
 CodeLocation::operator bool() const {
-    return file_ && ::strlen(file_);
+    return file_ != 0;
 }
 
 void CodeLocation::print(std::ostream& os) const {
     if ( file_ ) {
         os << " (" << file_ << " +" << line_;
-        if ( ::strlen(func_) )
+        if ( strlen(func_) )
             os << " " << func_;
         os << ")";
     }

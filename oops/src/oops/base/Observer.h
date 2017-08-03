@@ -52,9 +52,9 @@ template <typename MODEL, typename STATE> class Observer : public PostBase<STATE
 
  private:
 // Methods
-  void doInitialize(const STATE &, const util::DateTime &, const util::Duration &) override;
-  void doProcessing(const STATE &) override;
-  void doFinalize(const STATE &) override;
+  void doInitialize(const STATE &, const util::DateTime &, const util::Duration &);
+  void doProcessing(const STATE &);
+  void doFinalize(const STATE &);
 
 // Obs operator
   ObsSpace_ obspace_;

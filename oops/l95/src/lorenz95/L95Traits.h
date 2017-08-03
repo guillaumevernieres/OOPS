@@ -31,12 +31,15 @@
 #include "lorenz95/ObsVec1D.h"
 #include "lorenz95/Resolution.h"
 #include "lorenz95/StateL95.h"
+#include "lorenz95/TLML95.h"
 #include "lorenz95/LocalizationMatrixL95.h"
 
 namespace lorenz95 {
 
 struct L95Traits {
   static std::string name() {return "Lorenz 95";}
+//  static const int nnn = 95;
+  static const std::string nameCovar;
 
   typedef lorenz95::Resolution             Geometry;
   typedef lorenz95::NoVariables            Variables;
@@ -44,6 +47,7 @@ struct L95Traits {
   typedef lorenz95::StateL95               State;
   typedef lorenz95::ModelL95               Model;
   typedef lorenz95::IncrementL95           Increment;
+  typedef lorenz95::TLML95                 LinearModel;
   typedef lorenz95::ErrorCovarianceL95     Covariance;
 
   typedef lorenz95::ModelBias              ModelAuxControl;
@@ -64,6 +68,8 @@ struct L95Traits {
 
   typedef lorenz95::LocalizationMatrixL95  LocalizationMatrix;
 };
+
+const std::string L95Traits::nameCovar = "L95Error";
 
 }  // namespace lorenz95
 

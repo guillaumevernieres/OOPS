@@ -127,27 +127,19 @@ JSON& JSON::endList()
     return *this;
 }
 
-JSON& JSON::operator<<(bool n)
+JSON& JSON::operator<<(const char* s)
 {
     null_ = false;
     sep();
-    out_ << (n ? "true": "false");
+    encode(out_, s);
     return *this;
 }
 
-JSON& JSON::operator<<(char n)
+JSON& JSON::operator<<(const std::string& s)
 {
     null_ = false;
     sep();
-    out_ << '"' << n << '"';
-    return *this;
-}
-
-JSON& JSON::operator<<(unsigned char n)
-{
-    null_ = false;
-    sep();
-    out_ << '"' << n << '"';
+    encode(out_, s.c_str());
     return *this;
 }
 
@@ -164,6 +156,22 @@ JSON& JSON::operator<<(unsigned int n)
     null_ = false;
     sep();
     out_ << n;
+    return *this;
+}
+
+JSON& JSON::operator<<(char n)
+{
+    null_ = false;
+    sep();
+    out_ << '"' << n << '"';
+    return *this;
+}
+
+JSON& JSON::operator<<(bool n)
+{
+    null_ = false;
+    sep();
+    out_ << (n ? "true": "false");
     return *this;
 }
 
@@ -199,35 +207,11 @@ JSON& JSON::operator<<(unsigned long long n)
     return *this;
 }
 
-JSON& JSON::operator<<(float n)
-{
-    null_ = false;
-    sep();
-    out_ << n;
-    return *this;
-}
-
 JSON& JSON::operator<<(double n)
 {
     null_ = false;
     sep();
     out_ << n;
-    return *this;
-}
-
-JSON& JSON::operator<<(const std::string& s)
-{
-    null_ = false;
-    sep();
-    encode(out_, s.c_str());
-    return *this;
-}
-
-JSON& JSON::operator<<(const char* s)
-{
-    null_ = false;
-    sep();
-    encode(out_, s);
     return *this;
 }
 

@@ -1,7 +1,4 @@
 module fckit_refcounted_fortran_module
-  !! Provides [[fckit_refcounted_fortran_module:fckit_refcounted_fortran(type)]],
-  !! a reference counted implementation of [[fckit_object_module:fckit_object(type)]]
-
 use fckit_object_module, only: fckit_object
 implicit none
 private
@@ -16,23 +13,17 @@ public fckit_refcounted_fortran
 !========================================================================
 
 type, extends(fckit_object) :: fckit_refcounted_fortran
-  !! Implements a reference counted [[fckit_object_module:fckit_object(type)]]
-  !!
-  !! Very similar to [[fckit_refcounted_module:fckit_refcounted(type)]], with the
-  !! distinction that the internal C pointer is not keeping track of refcounting.
-  !! Instead, the refcount is stored internally
-
   integer, pointer, private :: refcount => null()
 contains
-  procedure, public :: final
-  procedure, private :: reset
+  procedure, public :: final => final_f
+  procedure, private :: reset => reset_f
   generic, public :: assignment(=) => reset
-  procedure, public :: owners
-  procedure, public :: attach
-  procedure, public :: detach
-  procedure, public :: return
-  procedure, public :: copy
-  procedure, public :: delete
+  procedure, public :: owners => owners_f
+  procedure, public :: attach => attach_f
+  procedure, public :: detach => detach_f
+  procedure, public :: return => return_f
+  procedure, public :: copy => copy_f
+  procedure, public :: delete => delete_f
 
 #ifdef EC_HAVE_Fortran_FINALIZATION
   final :: final_auto_f
@@ -52,24 +43,24 @@ subroutine assert_refcount(this)
   endif
 end subroutine
 
-subroutine delete(this)
+subroutine delete_f(this)
   use fckit_c_interop_module
   class(fckit_refcounted_fortran), intent(inout) :: this
   call c_ptr_free(this%c_ptr())
 end subroutine
 
 
-subroutine copy(this,obj_in)
+subroutine copy_f(this,obj_in)
   class(fckit_refcounted_fortran), intent(inout) :: this
   class(fckit_refcounted_fortran), target, intent(in) :: obj_in
 end subroutine
 
-subroutine final_auto(this)
+subroutine final_auto_f(this)
   type(fckit_refcounted_fortran), intent(inout) :: this
   call this%final()
 end subroutine
 
-subroutine final(this)
+subroutine final_f(this)
   class(fckit_refcounted_Fortran), intent(inout) :: this
   if( .not. this%is_null() ) then
     if( this%owners() >  0 ) then
@@ -77,13 +68,12 @@ subroutine final(this)
     endif
     if( this%owners() == 0 ) then
       call this%delete()
-      if( associated(this%refcount) ) deallocate(this%refcount)
     endif
     call this%reset_c_ptr()
   endif
 end subroutine
 
-subroutine reset(obj_out,obj_in)
+subroutine reset_f(obj_out,obj_in)
   use fckit_c_interop_module
   class(fckit_refcounted_fortran), intent(inout) :: obj_out
   class(fckit_refcounted_fortran), intent(in) :: obj_in
@@ -96,40 +86,32 @@ subroutine reset(obj_out,obj_in)
   endif
 end subroutine
 
-subroutine attach(this)
+subroutine attach_f(this)
   class(fckit_refcounted_fortran), intent(inout) :: this
   call assert_refcount(this)
   this%refcount = this%refcount + 1
 end subroutine
 
-subroutine detach(this)
+subroutine detach_f(this)
   class(fckit_refcounted_fortran), intent(inout) :: this
   call assert_refcount(this)
-  this%refcount = max(0, this%refcount - 1)
+  this%refcount = this%refcount - 1
 end subroutine
 
-function owners(this)
-  integer :: owners
+function owners_f(this)
+  integer :: owners_f
   class(fckit_refcounted_fortran) :: this
   call assert_refcount(this)
-  owners = this%refcount
+  owners_f = this%refcount
 end function
 
-subroutine return(this)
+subroutine return_f(this)
   class(fckit_refcounted_fortran), intent(inout) :: this
 #ifdef Fortran_FINAL_FUNCTION_RESULT
   if( this%owners() == 0 ) call this%attach()
 #else
-  call this%detach()
+  if( this%owners() > 0 ) call this%detach()
 #endif
-end subroutine
-
-subroutine consumed(this)
-  use fckit_c_interop_module
-  class(fckit_refcounted_fortran), intent(in) :: this
-  type(fckit_refcounted_fortran) :: consumed_obj
-  consumed_obj = this        ! increase refcount
-  call consumed_obj%final()  ! decrease refcount, and possibly delete
 end subroutine
 
 end module

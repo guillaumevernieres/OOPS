@@ -14,12 +14,11 @@
 #include "./TestConfig.h"
 #include "eckit/config/LocalConfiguration.h"
 #include "lorenz95/ObsTable.h"
-#include "test/TestFixture.h"
 
 namespace test {
 
 // -----------------------------------------------------------------------------
-class ObsTableTestFixture : public TestFixture {
+class ObsTableTestFixture {
  public:
   ObsTableTestFixture() {
     obsconf_.reset(new eckit::LocalConfiguration(TestConfig::config(), "Observations"));

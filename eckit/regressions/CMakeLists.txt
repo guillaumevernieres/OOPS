@@ -1,4 +1,4 @@
-list( APPEND regressions ECKIT-175 ECKIT-221 ECKIT-166 )
+list( APPEND regressions ECKIT-175 )
 
 foreach( r ${regressions} )
 
@@ -8,7 +8,7 @@ foreach( r ${regressions} )
     NOINSTALL
     TARGET   ${r}.x
     SOURCES  ${r}.cc
-    LIBS     eckit_mpi eckit )
+    LIBS     eckit )
 
   ecbuild_add_test(
     TYPE     SCRIPT

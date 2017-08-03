@@ -20,7 +20,7 @@ use qg_geom_mod
 use iso_c_binding
 use config_mod
 use kinds
-use fckit_log_module, only : fckit_log
+use fckit_log_module, only : log
 
 implicit none
 type(c_ptr), intent(in)   :: c_model  !< The configuration
@@ -71,7 +71,7 @@ call DSYEV ('V','L',config%ny,evects,config%ny,evals,work,size(work),info)
 
 if (info/=0) then
   write(record,*) "c_qg_3d_covar_setup: DSYEV returns info=",info
-  call fckit_log%error(record)
+  call log%error(record)
   call abor1_ftn ("c_qg_3d_covar_setup: DSYEV failed to sqrt matrix")
 endif
 
@@ -129,7 +129,7 @@ deallocate(trigs)
 
 if (mod(config%nx,2)/=0) then
   write(record,*) "c_qg_3d_covar_setup: number of zonal gridpoints nx=",config%nx
-  call fckit_log%error(record)
+  call log%error(record)
   call abor1_ftn("c_qg_3d_covar_setup: odd number of zonal grid points")
 endif
 
